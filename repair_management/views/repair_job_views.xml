@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- FORM VIEW                                                        -->
+    <!-- ================================================================ -->
+    <record id="view_repair_job_form" model="ir.ui.view">
+        <field name="name">repair.job.form</field>
+        <field name="model">repair.job</field>
+        <field name="arch" type="xml">
+            <form string="Repair Job">
+                <header>
+                    <!-- State action buttons -->
+                    <button name="action_start_diagnosis"
+                            string="Start Diagnosis"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'received'"/>
+                    <button name="action_start_repair"
+                            string="Start Repair"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state not in ('diagnosing', 'waiting_parts')"/>
+                    <button name="action_wait_parts"
+                            string="Wait for Parts"
+                            type="object"
+                            class="btn-warning"
+                            invisible="state not in ('diagnosing', 'repairing')"/>
+                    <button name="action_ready"
+                            string="Mark Ready"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'repairing'"/>
+                    <button name="action_collect"
+                            string="Mark Collected"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'ready'"/>
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state in ('collected', 'cancelled')"
+                            confirm="Are you sure you want to cancel this repair job?"/>
+                    <!-- Status bar -->
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="received,diagnosing,repairing,ready,collected"/>
+                </header>
+
+                <sheet>
+                    <!-- Priority ribbon -->
+                    <widget name="web_ribbon"
+                            title="Urgent"
+                            bg_color="text-bg-warning"
+                            invisible="priority != 'urgent'"/>
+                    <widget name="web_ribbon"
+                            title="Emergency"
+                            bg_color="text-bg-danger"
+                            invisible="priority != 'emergency'"/>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <!-- Top groups -->
+                    <group>
+                        <group string="Job Information">
+                            <field name="date_received"/>
+                            <field name="date_estimated_completion"/>
+                            <field name="branch_id"/>
+                            <field name="priority"/>
+                            <field name="technician_id"/>
+                            <field name="technician_ids" widget="many2many_tags"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Customer Information">
+                            <field name="customer_id"/>
+                            <field name="customer_phone"/>
+                            <field name="customer_email"/>
+                        </group>
+                    </group>
+
+                    <group string="Device Information">
+                        <group>
+                            <field name="device_type"/>
+                            <field name="device_brand"/>
+                            <field name="device_model"/>
+                        </group>
+                        <group>
+                            <field name="device_serial"/>
+                            <field name="device_color"/>
+                        </group>
+                    </group>
+
+                    <separator string="Fault Description"/>
+                    <field name="fault_description" placeholder="Describe the customer's complaint or reported fault..."/>
+
+                    <!-- Notebook tabs -->
+                    <notebook>
+                        <!-- Tab 1: Parts Used -->
+                        <page string="Parts Used" name="parts">
+                            <field name="parts_line_ids" widget="one2many">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="description"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="warehouse_id"/>
+                                    <field name="is_deducted"/>
+                                    <field name="subtotal" sum="Total Parts Cost"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="parts_cost" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+
+                        <!-- Tab 2: Diagnosis & Repair Notes -->
+                        <page string="Diagnosis &amp; Repair" name="diagnosis">
+                            <group>
+                                <group>
+                                    <field name="diagnosis_notes"
+                                           placeholder="Internal diagnosis notes..."/>
+                                </group>
+                                <group>
+                                    <field name="technician_notes"
+                                           placeholder="Technician notes..."/>
+                                </group>
+                            </group>
+                            <separator string="Repair Action Taken"/>
+                            <field name="repair_action_taken"
+                                   placeholder="Describe the repair action taken..."/>
+                        </page>
+
+                        <!-- Tab 3: Costs & Invoice -->
+                        <page string="Costs &amp; Invoice" name="costs">
+                            <group>
+                                <group string="Cost Breakdown">
+                                    <field name="diagnosis_fee"/>
+                                    <field name="labour_cost"/>
+                                    <field name="parts_cost"/>
+                                    <field name="discount_amount"/>
+                                    <field name="total_cost" class="fw-bold"/>
+                                </group>
+                                <group string="Payment">
+                                    <field name="amount_paid"/>
+                                    <field name="balance_due"
+                                           class="fw-bold"
+                                           decoration-danger="balance_due &gt; 0"/>
+                                </group>
+                            </group>
+                            <separator string="Invoice"/>
+                            <group>
+                                <group>
+                                    <field name="invoice_id"/>
+                                    <field name="invoice_state"/>
+                                </group>
+                                <group>
+                                    <button name="action_create_invoice"
+                                            string="Create Invoice"
+                                            type="object"
+                                            class="btn-primary"
+                                            icon="fa-file-text-o"
+                                            invisible="invoice_id"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 4: Warranty & History -->
+                        <page string="Warranty &amp; History" name="warranty">
+                            <group>
+                                <group string="Warranty">
+                                    <field name="warranty_period"/>
+                                    <field name="warranty_expiry"/>
+                                    <field name="is_warranty_job"/>
+                                    <field name="original_job_id"
+                                           invisible="not is_warranty_job"/>
+                                </group>
+                                <group string="Comeback History">
+                                    <field name="is_comeback"/>
+                                    <field name="comeback_count"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 5: Device Condition -->
+                        <page string="Device Condition" name="condition">
+                            <group>
+                                <group>
+                                    <field name="device_condition"
+                                           placeholder="Describe the physical condition on arrival..."/>
+                                </group>
+                                <group>
+                                    <field name="device_serial"/>
+                                    <field name="device_color"/>
+                                </group>
+                            </group>
+                            <separator string="Device Photos"/>
+                            <field name="image_ids" widget="many2many_binary"/>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <!-- Chatter -->
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- LIST / TREE VIEW                                                 -->
+    <!-- ================================================================ -->
+    <record id="view_repair_job_list" model="ir.ui.view">
+        <field name="name">repair.job.list</field>
+        <field name="model">repair.job</field>
+        <field name="arch" type="xml">
+            <list string="Repair Jobs"
+                  decoration-success="state == 'ready'"
+                  decoration-warning="state == 'waiting_parts'"
+                  decoration-danger="state == 'cancelled'"
+                  decoration-info="state == 'collected'">
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="device_type"/>
+                <field name="device_brand"/>
+                <field name="device_model"/>
+                <field name="technician_id"/>
+                <field name="branch_id" optional="show"/>
+                <field name="total_cost" sum="Total"/>
+                <field name="balance_due" sum="Total Due"
+                       decoration-danger="balance_due &gt; 0"/>
+                <field name="state"
+                       widget="badge"
+                       decoration-success="state == 'ready'"
+                       decoration-warning="state == 'waiting_parts'"
+                       decoration-danger="state == 'cancelled'"
+                       decoration-info="state == 'collected'"/>
+                <field name="date_received"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- KANBAN VIEW                                                      -->
+    <!-- ================================================================ -->
+    <record id="view_repair_job_kanban" model="ir.ui.view">
+        <field name="name">repair.job.kanban</field>
+        <field name="model">repair.job</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state"
+                    class="o_kanban_small_column"
+                    quick_create="false">
+                <field name="name"/>
+                <field name="customer_id"/>
+                <field name="device_brand"/>
+                <field name="device_model"/>
+                <field name="technician_id"/>
+                <field name="priority"/>
+                <field name="total_cost"/>
+                <field name="state"/>
+                <progressbar field="state"
+                             colors='{"received": "muted", "diagnosing": "info", "repairing": "primary", "waiting_parts": "warning", "ready": "success", "collected": "done", "cancelled": "danger"}'/>
+                <templates>
+                    <t t-name="card">
+                        <!-- Left color bar by priority -->
+                        <field name="priority"
+                               widget="priority_star"
+                               invisible="1"/>
+                        <div t-attf-class="#{record.priority.raw_value == 'emergency' ? 'border-start border-danger border-4' : record.priority.raw_value == 'urgent' ? 'border-start border-warning border-4' : ''} ps-2">
+                            <div class="o_kanban_record_top mb-0">
+                                <div class="o_kanban_record_headings">
+                                    <strong>
+                                        <field name="name"/>
+                                    </strong>
+                                </div>
+                                <div class="o_kanban_record_top_right">
+                                    <span t-if="record.priority.raw_value == 'urgent'"
+                                          class="badge text-bg-warning">
+                                        Urgent
+                                    </span>
+                                    <span t-if="record.priority.raw_value == 'emergency'"
+                                          class="badge text-bg-danger">
+                                        Emergency
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div>
+                                    <i class="fa fa-user me-1" title="Customer"/>
+                                    <field name="customer_id"/>
+                                </div>
+                                <div>
+                                    <i class="fa fa-laptop me-1" title="Device"/>
+                                    <field name="device_brand"/>
+                                    <t t-if="record.device_model.value">
+                                        – <field name="device_model"/>
+                                    </t>
+                                </div>
+                                <div t-if="record.technician_id.value">
+                                    <i class="fa fa-wrench me-1" title="Technician"/>
+                                    <field name="technician_id"/>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="activity_ids" widget="kanban_activity"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <strong>
+                                        <field name="total_cost" widget="monetary"/>
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- SEARCH VIEW                                                      -->
+    <!-- ================================================================ -->
+    <record id="view_repair_job_search" model="ir.ui.view">
+        <field name="name">repair.job.search</field>
+        <field name="model">repair.job</field>
+        <field name="arch" type="xml">
+            <search string="Search Repair Jobs">
+                <!-- Search fields -->
+                <field name="name" string="Reference"/>
+                <field name="customer_id" string="Customer"/>
+                <field name="device_brand" string="Brand"/>
+                <field name="technician_id" string="Technician"/>
+
+                <!-- Filters -->
+                <separator/>
+                <filter name="filter_today"
+                        string="Today's Jobs"
+                        domain="[('date_received', '&gt;=', context_today().strftime('%Y-%m-%d')),
+                                 ('date_received', '&lt;', (context_today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_pending"
+                        string="Pending Jobs"
+                        domain="[('state', 'in', ('received', 'diagnosing', 'repairing', 'waiting_parts'))]"/>
+                <filter name="filter_ready"
+                        string="Ready for Pickup"
+                        domain="[('state', '=', 'ready')]"/>
+                <separator/>
+                <filter name="filter_warranty"
+                        string="Warranty Jobs"
+                        domain="[('is_warranty_job', '=', True)]"/>
+                <filter name="filter_comeback"
+                        string="Comeback Jobs"
+                        domain="[('is_comeback', '=', True)]"/>
+                <separator/>
+                <filter name="filter_urgent"
+                        string="Urgent"
+                        domain="[('priority', '=', 'urgent')]"/>
+                <filter name="filter_emergency"
+                        string="Emergency"
+                        domain="[('priority', '=', 'emergency')]"/>
+
+                <!-- Group by -->
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_state"
+                            string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_branch"
+                            string="Branch"
+                            context="{'group_by': 'branch_id'}"/>
+                    <filter name="group_technician"
+                            string="Technician"
+                            context="{'group_by': 'technician_id'}"/>
+                    <filter name="group_device_type"
+                            string="Device Type"
+                            context="{'group_by': 'device_type'}"/>
+                    <filter name="group_date_received"
+                            string="Date Received"
+                            context="{'group_by': 'date_received:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>

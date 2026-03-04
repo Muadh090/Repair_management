@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_repair_job_manager,repair.job.manager,model_repair_job,base.group_system,1,1,1,1
+access_repair_job_technician,repair.job.technician,model_repair_job,base.group_user,1,1,0,0
+access_repair_job_receptionist,repair.job.receptionist,model_repair_job,base.group_user,1,1,1,0
+access_repair_job_accountant,repair.job.accountant,model_repair_job,account.group_account_user,1,0,0,0
+access_repair_parts_line_manager,repair.parts.line.manager,model_repair_parts_line,base.group_system,1,1,1,1
+access_repair_parts_line_technician,repair.parts.line.technician,model_repair_parts_line,base.group_user,1,1,1,1
+access_repair_parts_line_receptionist,repair.parts.line.receptionist,model_repair_parts_line,base.group_user,1,1,1,0

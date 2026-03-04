@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- ACTIONS                                                          -->
+    <!-- ================================================================ -->
+
+    <!-- All Jobs -->
+    <record id="action_repair_job_all" model="ir.actions.act_window">
+        <field name="name">All Jobs</field>
+        <field name="res_model">repair.job</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_repair_job_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first repair job
+            </p>
+            <p>Track device repairs from reception to collection.</p>
+        </field>
+    </record>
+
+    <!-- My Jobs (filtered to current user as technician) -->
+    <record id="action_repair_job_my" model="ir.actions.act_window">
+        <field name="name">My Jobs</field>
+        <field name="res_model">repair.job</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_repair_job_search"/>
+        <field name="domain">[('technician_id.user_id', '=', uid)]</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No jobs assigned to you
+            </p>
+            <p>Jobs where you are the lead technician will appear here.</p>
+        </field>
+    </record>
+
+    <!-- Ready for Pickup -->
+    <record id="action_repair_job_ready" model="ir.actions.act_window">
+        <field name="name">Ready for Pickup</field>
+        <field name="res_model">repair.job</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_repair_job_search"/>
+        <field name="domain">[('state', '=', 'ready')]</field>
+        <field name="context">{'search_default_filter_ready': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No jobs ready for pickup
+            </p>
+            <p>Completed repairs waiting for customer collection.</p>
+        </field>
+    </record>
+
+    <!-- Pending Jobs -->
+    <record id="action_repair_job_pending" model="ir.actions.act_window">
+        <field name="name">Pending Jobs</field>
+        <field name="res_model">repair.job</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_repair_job_search"/>
+        <field name="domain">[('state', 'not in', ('collected', 'cancelled'))]</field>
+        <field name="context">{'search_default_filter_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No pending jobs
+            </p>
+            <p>All active repair jobs that are still in progress.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- TOP-LEVEL MENU                                                   -->
+    <!-- ================================================================ -->
+    <menuitem id="menu_repair_root"
+              name="Repairs"
+              web_icon="repair_management,static/description/icon.png"
+              sequence="50"/>
+
+    <!-- ================================================================ -->
+    <!-- MAIN MENU ITEMS                                                  -->
+    <!-- ================================================================ -->
+    <menuitem id="menu_repair_all_jobs"
+              name="All Jobs"
+              parent="menu_repair_root"
+              action="action_repair_job_all"
+              sequence="10"/>
+
+    <menuitem id="menu_repair_my_jobs"
+              name="My Jobs"
+              parent="menu_repair_root"
+              action="action_repair_job_my"
+              sequence="20"/>
+
+    <menuitem id="menu_repair_ready"
+              name="Ready for Pickup"
+              parent="menu_repair_root"
+              action="action_repair_job_ready"
+              sequence="30"/>
+
+    <menuitem id="menu_repair_pending"
+              name="Pending Jobs"
+              parent="menu_repair_root"
+              action="action_repair_job_pending"
+              sequence="40"/>
+
+    <!-- ================================================================ -->
+    <!-- CONFIGURATION SUBMENU                                            -->
+    <!-- ================================================================ -->
+    <menuitem id="menu_repair_configuration"
+              name="Configuration"
+              parent="menu_repair_root"
+              sequence="100"/>
+
+    <menuitem id="menu_repair_config_settings"
+              name="Settings"
+              parent="menu_repair_configuration"
+              sequence="10"/>
+
+    <menuitem id="menu_repair_config_device_types"
+              name="Device Types"
+              parent="menu_repair_configuration"
+              sequence="20"/>
+
+    <menuitem id="menu_repair_config_pricelist"
+              name="Service Price List"
+              parent="menu_repair_configuration"
+              sequence="30"/>
+
+</odoo>

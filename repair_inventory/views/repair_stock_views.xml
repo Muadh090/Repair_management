@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- STOCK MOVEMENT — LIST VIEW                                       -->
+    <!-- ================================================================ -->
+    <record id="view_repair_stock_movement_list" model="ir.ui.view">
+        <field name="name">repair.stock.movement.list</field>
+        <field name="model">repair.stock.movement</field>
+        <field name="arch" type="xml">
+            <list string="Stock Movements"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-success="state == 'done'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="movement_type"/>
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="from_branch_id" optional="show"/>
+                <field name="to_branch_id" optional="show"/>
+                <field name="from_warehouse_id" optional="hide"/>
+                <field name="to_warehouse_id" optional="hide"/>
+                <field name="unit_cost" optional="hide"/>
+                <field name="total_cost" optional="hide" sum="Total"/>
+                <field name="date"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'confirmed'"
+                       decoration-success="state == 'done'"
+                       decoration-danger="state == 'cancelled'"/>
+                <field name="done_by" widget="many2one_avatar_user"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- STOCK MOVEMENT — FORM VIEW                                       -->
+    <!-- ================================================================ -->
+    <record id="view_repair_stock_movement_form" model="ir.ui.view">
+        <field name="name">repair.stock.movement.form</field>
+        <field name="model">repair.stock.movement</field>
+        <field name="arch" type="xml">
+            <form string="Stock Movement">
+                <header>
+                    <button name="action_confirm"
+                            string="Confirm"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_done"
+                            string="Done"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state in ('cancelled',)"
+                            confirm="Are you sure you want to cancel this movement?"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Movement Details">
+                            <field name="movement_type"
+                                   readonly="state != 'draft'"/>
+                            <field name="product_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="product_category"/>
+                            <field name="quantity"
+                                   readonly="state != 'draft'"/>
+                            <field name="unit_of_measure"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Cost &amp; Reference">
+                            <field name="unit_cost"
+                                   readonly="state != 'draft'"/>
+                            <field name="total_cost"/>
+                            <field name="reference"/>
+                            <field name="date"
+                                   readonly="state != 'draft'"/>
+                            <field name="done_by"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Source">
+                            <field name="from_branch_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="from_warehouse_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="from_location_id"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Destination">
+                            <field name="to_branch_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="to_warehouse_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="to_location_id"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Related Records">
+                            <field name="repair_id"/>
+                            <field name="stock_move_id"/>
+                            <field name="stock_picking_id"/>
+                        </group>
+                    </group>
+                    <separator string="Notes"/>
+                    <field name="notes" placeholder="Additional notes..."/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- STOCK MOVEMENT — SEARCH VIEW                                     -->
+    <!-- ================================================================ -->
+    <record id="view_repair_stock_movement_search" model="ir.ui.view">
+        <field name="name">repair.stock.movement.search</field>
+        <field name="model">repair.stock.movement</field>
+        <field name="arch" type="xml">
+            <search string="Search Stock Movements">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="from_branch_id"/>
+                <field name="to_branch_id"/>
+                <field name="repair_id"/>
+                <separator/>
+                <filter name="filter_today"
+                        string="Today"
+                        domain="[('date', '&gt;=', (context_today()).strftime('%Y-%m-%d 00:00:00')),
+                                 ('date', '&lt;', (context_today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter name="filter_this_week"
+                        string="This Week"
+                        domain="[('date', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <separator/>
+                <filter name="filter_draft"
+                        string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_done"
+                        string="Done"
+                        domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_branch"
+                            string="From Branch"
+                            context="{'group_by': 'from_branch_id'}"/>
+                    <filter name="group_to_branch"
+                            string="To Branch"
+                            context="{'group_by': 'to_branch_id'}"/>
+                    <filter name="group_type"
+                            string="Movement Type"
+                            context="{'group_by': 'movement_type'}"/>
+                    <filter name="group_product"
+                            string="Product"
+                            context="{'group_by': 'product_id'}"/>
+                    <filter name="group_date"
+                            string="Date"
+                            context="{'group_by': 'date:day'}"/>
+                    <filter name="group_state"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- STOCK ALERT — LIST VIEW                                          -->
+    <!-- ================================================================ -->
+    <record id="view_repair_stock_alert_list" model="ir.ui.view">
+        <field name="name">repair.stock.alert.list</field>
+        <field name="model">repair.stock.alert</field>
+        <field name="arch" type="xml">
+            <list string="Stock Alerts"
+                  decoration-danger="alert_type == 'out_of_stock' or alert_type == 'critical'"
+                  decoration-warning="alert_type == 'low_stock'"
+                  decoration-muted="state == 'resolved'">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="warehouse_id" optional="show"/>
+                <field name="branch_id" optional="show"/>
+                <field name="current_stock"/>
+                <field name="minimum_stock"/>
+                <field name="shortage_qty"
+                       decoration-danger="shortage_qty &gt; 0"/>
+                <field name="alert_type" widget="badge"
+                       decoration-danger="alert_type in ('out_of_stock', 'critical')"
+                       decoration-warning="alert_type == 'low_stock'"/>
+                <field name="state" widget="badge"
+                       decoration-danger="state == 'active'"
+                       decoration-warning="state == 'acknowledged'"
+                       decoration-success="state == 'resolved'"/>
+                <field name="date_triggered"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- STOCK ALERT — FORM VIEW                                          -->
+    <!-- ================================================================ -->
+    <record id="view_repair_stock_alert_form" model="ir.ui.view">
+        <field name="name">repair.stock.alert.form</field>
+        <field name="model">repair.stock.alert</field>
+        <field name="arch" type="xml">
+            <form string="Stock Alert">
+                <header>
+                    <button name="action_acknowledge"
+                            string="Acknowledge"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'active'"/>
+                    <button name="action_create_purchase_request"
+                            string="Create Purchase Request"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'resolved'"/>
+                    <button name="action_resolve"
+                            string="Resolve"
+                            type="object"
+                            class="btn-success"
+                            invisible="state == 'resolved'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="active,acknowledged,resolved"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(repair_inventory.action_repair_purchase_request_all)d"
+                                type="action"
+                                class="oe_stat_button"
+                                icon="fa-shopping-cart"
+                                invisible="not purchase_request_id">
+                            <field name="purchase_request_id" widget="statinfo" string="Purchase Request"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Product Info">
+                            <field name="product_id" readonly="1"/>
+                            <field name="warehouse_id"/>
+                            <field name="branch_id"/>
+                        </group>
+                        <group string="Stock Levels">
+                            <field name="current_stock"/>
+                            <field name="minimum_stock"/>
+                            <field name="shortage_qty"
+                                   decoration-danger="shortage_qty &gt; 0"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Alert Details">
+                            <field name="alert_type"/>
+                            <field name="date_triggered"/>
+                            <field name="acknowledged_by"/>
+                        </group>
+                    </group>
+                    <separator string="Notes"/>
+                    <field name="notes" placeholder="Additional notes..."/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- STOCK ALERT — SEARCH VIEW                                        -->
+    <!-- ================================================================ -->
+    <record id="view_repair_stock_alert_search" model="ir.ui.view">
+        <field name="name">repair.stock.alert.search</field>
+        <field name="model">repair.stock.alert</field>
+        <field name="arch" type="xml">
+            <search string="Search Stock Alerts">
+                <field name="product_id"/>
+                <field name="warehouse_id"/>
+                <field name="branch_id"/>
+                <separator/>
+                <filter name="filter_active"
+                        string="Active Alerts"
+                        domain="[('state', '=', 'active')]"/>
+                <filter name="filter_critical"
+                        string="Critical"
+                        domain="[('alert_type', '=', 'critical')]"/>
+                <filter name="filter_out_of_stock"
+                        string="Out of Stock"
+                        domain="[('alert_type', '=', 'out_of_stock')]"/>
+                <filter name="filter_low_stock"
+                        string="Low Stock"
+                        domain="[('alert_type', '=', 'low_stock')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_alert_type"
+                            string="Alert Type"
+                            context="{'group_by': 'alert_type'}"/>
+                    <filter name="group_state"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_branch"
+                            string="Branch"
+                            context="{'group_by': 'branch_id'}"/>
+                    <filter name="group_warehouse"
+                            string="Warehouse"
+                            context="{'group_by': 'warehouse_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+</odoo>

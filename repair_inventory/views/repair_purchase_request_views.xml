@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- PURCHASE REQUEST — LIST VIEW                                     -->
+    <!-- ================================================================ -->
+    <record id="view_repair_purchase_request_list" model="ir.ui.view">
+        <field name="name">repair.purchase.request.list</field>
+        <field name="model">repair.purchase.request</field>
+        <field name="arch" type="xml">
+            <list string="Purchase Requests"
+                  decoration-danger="priority == 'emergency'"
+                  decoration-warning="priority == 'urgent'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="branch_id"/>
+                <field name="requested_by"/>
+                <field name="request_date"/>
+                <field name="required_date"/>
+                <field name="priority" widget="badge"
+                       decoration-danger="priority == 'emergency'"
+                       decoration-warning="priority == 'urgent'"
+                       decoration-info="priority == 'normal'"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-primary="state == 'submitted'"
+                       decoration-success="state in ('approved', 'received')"
+                       decoration-warning="state == 'ordered'"
+                       decoration-danger="state in ('rejected', 'cancelled')"/>
+                <field name="total_estimated_cost" sum="Total"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- PURCHASE REQUEST — FORM VIEW                                     -->
+    <!-- ================================================================ -->
+    <record id="view_repair_purchase_request_form" model="ir.ui.view">
+        <field name="name">repair.purchase.request.form</field>
+        <field name="model">repair.purchase.request</field>
+        <field name="arch" type="xml">
+            <form string="Purchase Request">
+                <header>
+                    <button name="action_submit"
+                            string="Submit"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve"
+                            string="Approve"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'submitted'"/>
+                    <button name="action_reject"
+                            string="Reject"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state != 'submitted'"/>
+                    <button name="action_create_purchase_order"
+                            string="Create Purchase Order"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'approved'"/>
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state in ('cancelled', 'received')"
+                            confirm="Are you sure you want to cancel this request?"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,submitted,approved,ordered,received"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object"
+                                name="action_create_purchase_order"
+                                class="oe_stat_button"
+                                icon="fa-file-text-o"
+                                invisible="not purchase_order_id">
+                            <field name="purchase_order_id" widget="statinfo" string="Purchase Order"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Rejected"
+                            bg_color="text-bg-danger"
+                            invisible="state != 'rejected'"/>
+                    <widget name="web_ribbon" title="Cancelled"
+                            bg_color="text-bg-secondary"
+                            invisible="state != 'cancelled'"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Request Info">
+                            <field name="branch_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="warehouse_id"
+                                   readonly="state != 'draft'"/>
+                            <field name="requested_by"
+                                   readonly="state != 'draft'"/>
+                            <field name="approved_by"/>
+                        </group>
+                        <group string="Dates &amp; Priority">
+                            <field name="request_date"
+                                   readonly="state != 'draft'"/>
+                            <field name="required_date"
+                                   readonly="state != 'draft'"/>
+                            <field name="priority"
+                                   readonly="state != 'draft'"
+                                   widget="priority"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Related Records">
+                            <field name="repair_id"/>
+                            <field name="stock_alert_id"/>
+                        </group>
+                        <group string="Summary">
+                            <field name="total_estimated_cost" widget="monetary"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Request Lines" name="lines">
+                            <field name="line_ids"
+                                   readonly="state not in ('draft', 'submitted')">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="description"/>
+                                    <field name="current_stock"/>
+                                    <field name="minimum_stock"/>
+                                    <field name="quantity_requested"/>
+                                    <field name="quantity_approved"
+                                           readonly="state != 'submitted'"
+                                           column_invisible="parent.state == 'draft'"/>
+                                    <field name="unit_price_estimated"/>
+                                    <field name="subtotal" sum="Total"/>
+                                    <field name="preferred_supplier_id"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Rejection"
+                              name="rejection"
+                              invisible="state != 'rejected'">
+                            <group>
+                                <field name="rejection_reason"
+                                       readonly="state != 'submitted'"/>
+                            </group>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes"
+                                   placeholder="Additional notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- PURCHASE REQUEST — KANBAN VIEW                                   -->
+    <!-- ================================================================ -->
+    <record id="view_repair_purchase_request_kanban" model="ir.ui.view">
+        <field name="name">repair.purchase.request.kanban</field>
+        <field name="model">repair.purchase.request</field>
+        <field name="arch" type="xml">
+            <kanban string="Purchase Requests"
+                    default_group_by="state"
+                    class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="branch_id"/>
+                <field name="requested_by"/>
+                <field name="priority"/>
+                <field name="state"/>
+                <field name="total_estimated_cost"/>
+                <field name="request_date"/>
+                <field name="required_date"/>
+                <progressbar field="priority"
+                             colors='{"normal": "primary", "urgent": "warning", "emergency": "danger"}'/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <strong>
+                                <field name="name"/>
+                            </strong>
+                            <span t-if="record.priority.raw_value == 'emergency'"
+                                  class="badge text-bg-danger">Emergency</span>
+                            <span t-elif="record.priority.raw_value == 'urgent'"
+                                  class="badge text-bg-warning">Urgent</span>
+                        </div>
+                        <div class="text-muted small">
+                            <field name="branch_id"/>
+                        </div>
+                        <div class="mt-1">
+                            <field name="requested_by" widget="many2one_avatar_employee"/>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="text-muted small">
+                                <field name="request_date"/>
+                            </span>
+                            <span class="fw-bold">
+                                <field name="total_estimated_cost" widget="monetary"/>
+                            </span>
+                        </div>
+                        <div t-if="record.required_date.raw_value"
+                             class="text-muted small">
+                            Needed by: <field name="required_date"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- PURCHASE REQUEST — SEARCH VIEW                                   -->
+    <!-- ================================================================ -->
+    <record id="view_repair_purchase_request_search" model="ir.ui.view">
+        <field name="name">repair.purchase.request.search</field>
+        <field name="model">repair.purchase.request</field>
+        <field name="arch" type="xml">
+            <search string="Search Purchase Requests">
+                <field name="name"/>
+                <field name="branch_id"/>
+                <field name="requested_by"/>
+                <field name="line_ids" string="Product"
+                       filter_domain="[('line_ids.product_id.name', 'ilike', self)]"/>
+                <separator/>
+                <filter name="filter_my_requests"
+                        string="My Requests"
+                        domain="[('requested_by.user_id', '=', uid)]"/>
+                <filter name="filter_pending_approval"
+                        string="Pending Approval"
+                        domain="[('state', '=', 'submitted')]"/>
+                <filter name="filter_urgent"
+                        string="Urgent &amp; Emergency"
+                        domain="[('priority', 'in', ('urgent', 'emergency'))]"/>
+                <filter name="filter_this_week"
+                        string="This Week"
+                        domain="[('request_date', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_branch"
+                            string="Branch"
+                            context="{'group_by': 'branch_id'}"/>
+                    <filter name="group_state"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_priority"
+                            string="Priority"
+                            context="{'group_by': 'priority'}"/>
+                    <filter name="group_requested_by"
+                            string="Requested By"
+                            context="{'group_by': 'requested_by'}"/>
+                    <filter name="group_date"
+                            string="Request Date"
+                            context="{'group_by': 'request_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- PURCHASE REQUEST — ACTION                                        -->
+    <!-- ================================================================ -->
+    <record id="action_repair_purchase_request_all" model="ir.actions.act_window">
+        <field name="name">Purchase Requests</field>
+        <field name="res_model">repair.purchase.request</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_repair_purchase_request_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first purchase request
+            </p>
+            <p>Request parts from suppliers when stock is low.</p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_repair_deposit_manager,repair.deposit.manager,model_repair_deposit,base.group_system,1,1,1,1
+access_repair_deposit_receptionist,repair.deposit.receptionist,model_repair_deposit,base.group_user,1,1,1,0
+access_repair_deposit_accountant,repair.deposit.accountant,model_repair_deposit,account.group_account_user,1,1,1,1
+access_repair_deposit_technician,repair.deposit.technician,model_repair_deposit,base.group_user,1,0,0,0
+access_repair_payment_manager,repair.payment.manager,model_repair_payment,base.group_system,1,1,1,1
+access_repair_payment_receptionist,repair.payment.receptionist,model_repair_payment,base.group_user,1,1,1,0
+access_repair_payment_accountant,repair.payment.accountant,model_repair_payment,account.group_account_user,1,1,1,1
+access_repair_payment_technician,repair.payment.technician,model_repair_payment,base.group_user,1,0,0,0

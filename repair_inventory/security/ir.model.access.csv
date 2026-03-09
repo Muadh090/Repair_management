@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_repair_stock_movement_manager,repair.stock.movement.manager,model_repair_stock_movement,base.group_system,1,1,1,1
+access_repair_stock_movement_technician,repair.stock.movement.technician,model_repair_stock_movement,base.group_user,1,0,1,0
+access_repair_stock_movement_receptionist,repair.stock.movement.receptionist,model_repair_stock_movement,base.group_user,1,0,0,0
+access_repair_stock_movement_accountant,repair.stock.movement.accountant,model_repair_stock_movement,account.group_account_user,1,0,0,0
+access_repair_stock_alert_manager,repair.stock.alert.manager,model_repair_stock_alert,base.group_system,1,1,1,1
+access_repair_stock_alert_technician,repair.stock.alert.technician,model_repair_stock_alert,base.group_user,1,1,0,0
+access_repair_stock_alert_receptionist,repair.stock.alert.receptionist,model_repair_stock_alert,base.group_user,1,0,0,0
+access_repair_purchase_request_manager,repair.purchase.request.manager,model_repair_purchase_request,base.group_system,1,1,1,1
+access_repair_purchase_request_technician,repair.purchase.request.technician,model_repair_purchase_request,base.group_user,1,1,1,0
+access_repair_purchase_request_receptionist,repair.purchase.request.receptionist,model_repair_purchase_request,base.group_user,1,0,0,0
+access_repair_purchase_request_accountant,repair.purchase.request.accountant,model_repair_purchase_request,account.group_account_user,1,0,0,0
+access_repair_purchase_request_line_manager,repair.purchase.request.line.manager,model_repair_purchase_request_line,base.group_system,1,1,1,1
+access_repair_purchase_request_line_technician,repair.purchase.request.line.technician,model_repair_purchase_request_line,base.group_user,1,1,1,1
+access_repair_purchase_request_line_receptionist,repair.purchase.request.line.receptionist,model_repair_purchase_request_line,base.group_user,1,0,0,0

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- ACTIONS                                                          -->
+    <!-- ================================================================ -->
+
+    <!-- Parts Catalog -->
+    <record id="action_repair_parts_catalog" model="ir.actions.act_window">
+        <field name="name">Parts Catalog</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('is_repair_part', '=', True)]</field>
+        <field name="context">{'default_is_repair_part': True}</field>
+        <field name="search_view_id" ref="view_product_template_repair_parts_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_product_template_repair_parts_list')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('view_product_template_repair_parts_kanban')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Add your first repair part
+            </p>
+            <p>Manage parts catalog for repair operations.</p>
+        </field>
+    </record>
+
+    <!-- Stock Movements -->
+    <record id="action_repair_stock_movement_all" model="ir.actions.act_window">
+        <field name="name">Stock Movements</field>
+        <field name="res_model">repair.stock.movement</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_repair_stock_movement_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No stock movements yet
+            </p>
+            <p>Track all parts movements across branches and repairs.</p>
+        </field>
+    </record>
+
+    <!-- Stock Alerts -->
+    <record id="action_repair_stock_alert_all" model="ir.actions.act_window">
+        <field name="name">Stock Alerts</field>
+        <field name="res_model">repair.stock.alert</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_repair_stock_alert_search"/>
+        <field name="context">{'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No stock alerts
+            </p>
+            <p>Alerts are triggered when stock falls below minimum levels.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- INVENTORY SUBMENU                                                -->
+    <!-- ================================================================ -->
+    <menuitem id="menu_repair_inventory"
+              name="Inventory"
+              parent="repair_management.menu_repair_root"
+              sequence="50"/>
+
+    <!-- Parts Catalog -->
+    <menuitem id="menu_repair_parts_catalog"
+              name="Parts Catalog"
+              parent="menu_repair_inventory"
+              action="action_repair_parts_catalog"
+              sequence="10"/>
+
+    <!-- Stock Movements -->
+    <menuitem id="menu_repair_stock_movements"
+              name="Stock Movements"
+              parent="menu_repair_inventory"
+              action="action_repair_stock_movement_all"
+              sequence="20"/>
+
+    <!-- Stock Alerts -->
+    <menuitem id="menu_repair_stock_alerts"
+              name="Stock Alerts"
+              parent="menu_repair_inventory"
+              action="action_repair_stock_alert_all"
+              sequence="30"/>
+
+    <!-- Inter-Branch Transfers -->
+    <menuitem id="menu_repair_transfers"
+              name="Inter-Branch Transfers"
+              parent="menu_repair_inventory"
+              action="action_repair_transfer_all"
+              sequence="40"/>
+
+    <!-- Purchase Requests -->
+    <menuitem id="menu_repair_purchase_requests"
+              name="Purchase Requests"
+              parent="menu_repair_inventory"
+              action="action_repair_purchase_request_all"
+              sequence="50"/>
+
+    <!-- Stock Adjustment Wizard -->
+    <menuitem id="menu_repair_stock_adjustment"
+              name="Stock Adjustment"
+              parent="menu_repair_inventory"
+              action="action_repair_stock_adjustment_wizard"
+              sequence="60"/>
+
+    <!-- New Transfer Wizard -->
+    <menuitem id="menu_repair_new_transfer"
+              name="New Transfer"
+              parent="menu_repair_inventory"
+              action="action_repair_transfer_wizard"
+              sequence="70"/>
+
+</odoo>

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- REPORT ACTION                                                    -->
+    <!-- ================================================================ -->
+    <record id="action_report_repair_receipt" model="ir.actions.report">
+        <field name="name">Payment Receipt</field>
+        <field name="model">repair.job</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">repair_invoicing.report_repair_receipt</field>
+        <field name="report_file">repair_invoicing.report_repair_receipt</field>
+        <field name="binding_model_id" ref="repair_management.model_repair_job"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="repair_invoicing.paperformat_receipt"/>
+    </record>
+
+    <!-- Receipt-friendly paper format (80mm thermal) -->
+    <record id="paperformat_receipt" model="report.paperformat">
+        <field name="name">Receipt (80mm)</field>
+        <field name="format">custom</field>
+        <field name="page_width">80</field>
+        <field name="page_height">297</field>
+        <field name="margin_top">5</field>
+        <field name="margin_bottom">5</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+        <field name="orientation">Portrait</field>
+        <field name="header_line" eval="False"/>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- RECEIPT TEMPLATE                                                  -->
+    <!-- ================================================================ -->
+    <template id="report_repair_receipt">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="company" t-value="doc.env.company"/>
+                <div class="page"
+                     style="font-family: monospace; font-size: 12px; max-width: 300px; margin: 0 auto;">
+
+                    <!-- ============================================ -->
+                    <!-- HEADER                                       -->
+                    <!-- ============================================ -->
+                    <div class="text-center mb-2">
+                        <strong style="font-size: 16px;">
+                            <span t-field="company.name"/>
+                        </strong>
+                        <br/>
+                        <t t-if="doc.branch_id">
+                            <span t-field="doc.branch_id.name"/>
+                            <br/>
+                        </t>
+                        <t t-if="company.phone">
+                            Tel: <span t-field="company.phone"/>
+                            <br/>
+                        </t>
+                    </div>
+
+                    <div class="text-center mb-2"
+                         style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0;">
+                        <strong style="font-size: 14px;">PAYMENT RECEIPT</strong>
+                    </div>
+
+                    <!-- ============================================ -->
+                    <!-- RECEIPT DETAILS                               -->
+                    <!-- ============================================ -->
+                    <table style="width: 100%; font-size: 12px;"
+                           cellpadding="2">
+                        <!-- Latest payment reference -->
+                        <t t-set="last_payment"
+                           t-value="doc.payment_ids.filtered(lambda p: p.state == 'confirmed').sorted('payment_date', reverse=True)[:1]"/>
+                        <tr>
+                            <td>Receipt No.</td>
+                            <td class="text-end">
+                                <span t-if="last_payment"
+                                      t-esc="last_payment.name"/>
+                                <span t-else="">—</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Date</td>
+                            <td class="text-end">
+                                <span t-if="last_payment"
+                                      t-field="last_payment.payment_date"/>
+                                <span t-else=""
+                                      t-esc="doc.env.cr.now().strftime('%Y-%m-%d')"/>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style="border-top: 1px dashed #000; margin: 6px 0;"/>
+
+                    <!-- ============================================ -->
+                    <!-- CUSTOMER & JOB                               -->
+                    <!-- ============================================ -->
+                    <table style="width: 100%; font-size: 12px;"
+                           cellpadding="2">
+                        <tr>
+                            <td>Customer</td>
+                            <td class="text-end">
+                                <span t-field="doc.customer_id.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Job Ref</td>
+                            <td class="text-end">
+                                <span t-field="doc.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Device</td>
+                            <td class="text-end">
+                                <span t-field="doc.device_brand"/>
+                                <t t-if="doc.device_model">
+                                    <span t-field="doc.device_model"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style="border-top: 1px dashed #000; margin: 6px 0;"/>
+
+                    <!-- ============================================ -->
+                    <!-- PAYMENT INFO                                 -->
+                    <!-- ============================================ -->
+                    <table style="width: 100%; font-size: 12px;"
+                           cellpadding="2">
+                        <tr>
+                            <td>Total</td>
+                            <td class="text-end">
+                                <span t-field="doc.grand_total"
+                                      t-options="{'widget': 'float', 'precision': 2}"/>
+                            </td>
+                        </tr>
+                        <tr t-if="doc.total_deposit">
+                            <td>Deposit</td>
+                            <td class="text-end">
+                                <span t-field="doc.total_deposit"
+                                      t-options="{'widget': 'float', 'precision': 2}"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Amount Received</strong></td>
+                            <td class="text-end">
+                                <strong>
+                                    <span t-if="last_payment"
+                                          t-field="last_payment.amount"
+                                          t-options="{'widget': 'float', 'precision': 2}"/>
+                                    <span t-else="">0.00</span>
+                                </strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Payment Method</td>
+                            <td class="text-end">
+                                <span t-if="last_payment"
+                                      t-field="last_payment.payment_method"/>
+                                <span t-else="">—</span>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style="border-top: 1px dashed #000; margin: 6px 0;"/>
+
+                    <table style="width: 100%; font-size: 13px;"
+                           cellpadding="2">
+                        <tr>
+                            <td><strong>Balance Remaining</strong></td>
+                            <td class="text-end"
+                                t-attf-style="#{doc.balance_due > 0 and 'color: red;' or ''}">
+                                <strong>
+                                    <span t-field="doc.balance_due"
+                                          t-options="{'widget': 'float', 'precision': 2}"/>
+                                </strong>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div style="border-top: 1px dashed #000; margin: 6px 0;"/>
+
+                    <!-- ============================================ -->
+                    <!-- CASHIER                                      -->
+                    <!-- ============================================ -->
+                    <table t-if="last_payment and last_payment.received_by"
+                           style="width: 100%; font-size: 12px;"
+                           cellpadding="2">
+                        <tr>
+                            <td>Cashier</td>
+                            <td class="text-end">
+                                <span t-field="last_payment.received_by.name"/>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- ============================================ -->
+                    <!-- FOOTER                                       -->
+                    <!-- ============================================ -->
+                    <div class="text-center mt-3"
+                         style="font-size: 12px;">
+                        <strong>Thank you!</strong>
+                    </div>
+
+                    <div t-if="doc.warranty_period"
+                         class="text-center mt-1"
+                         style="font-size: 10px; color: #555;">
+                        Warranty: <span t-field="doc.warranty_period"/> days
+                        <t t-if="doc.warranty_expiry">
+                            (exp: <span t-field="doc.warranty_expiry"/>)
+                        </t>
+                    </div>
+
+                    <div class="text-center mt-2"
+                         style="font-size: 9px; color: #999;">
+                        <span t-field="company.name"/>
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

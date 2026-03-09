@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- INHERIT REPAIR JOB FORM – Add Invoicing Tab                      -->
+    <!-- ================================================================ -->
+    <record id="view_repair_job_form_invoicing" model="ir.ui.view">
+        <field name="name">repair.job.form.invoicing</field>
+        <field name="model">repair.job</field>
+        <field name="inherit_id" ref="repair_management.view_repair_job_form"/>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+
+            <!-- Add invoicing buttons to header -->
+            <xpath expr="//button[@name='action_cancel']" position="after">
+                <button name="action_create_proforma"
+                        string="Create Proforma"
+                        type="object"
+                        class="btn-secondary"
+                        icon="fa-file-o"
+                        invisible="proforma_id or state in ('collected', 'cancelled')"/>
+                <button name="action_register_payment"
+                        string="Register Payment"
+                        type="object"
+                        class="btn-success"
+                        icon="fa-money"
+                        invisible="state in ('cancelled',)"/>
+            </xpath>
+
+            <!-- Replace the Costs & Invoice tab with enhanced invoicing tab -->
+            <xpath expr="//page[@name='costs']" position="replace">
+                <page string="Invoicing &amp; Payments" name="invoicing">
+
+                    <!-- Proforma section -->
+                    <group string="Proforma / Estimate" col="4">
+                        <field name="proforma_id"/>
+                        <button name="action_confirm_proforma"
+                                string="Convert to Invoice"
+                                type="object"
+                                class="btn-outline-primary btn-sm"
+                                icon="fa-exchange"
+                                invisible="not proforma_id or invoice_id"
+                                colspan="2"/>
+                    </group>
+
+                    <!-- Invoice details -->
+                    <group string="Invoice">
+                        <group>
+                            <field name="invoice_id"/>
+                            <field name="invoice_date"/>
+                            <field name="invoice_amount_total"/>
+                            <field name="invoice_amount_residual"/>
+                            <field name="invoice_state"
+                                   widget="badge"
+                                   decoration-success="invoice_state == 'paid'"
+                                   decoration-warning="invoice_state == 'partial'"
+                                   decoration-danger="invoice_state in ('not_paid', 'in_payment')"/>
+                        </group>
+                        <group>
+                            <button name="action_create_invoice"
+                                    string="Create Invoice"
+                                    type="object"
+                                    class="btn-primary"
+                                    icon="fa-file-text-o"
+                                    invisible="invoice_id"/>
+                            <button name="action_send_invoice"
+                                    string="Send Invoice"
+                                    type="object"
+                                    class="btn-outline-primary btn-sm"
+                                    icon="fa-envelope"
+                                    invisible="not invoice_id"/>
+                            <button name="action_print_invoice"
+                                    string="Print Invoice"
+                                    type="object"
+                                    class="btn-outline-secondary btn-sm"
+                                    icon="fa-print"
+                                    invisible="not invoice_id"/>
+                            <button name="action_create_credit_note"
+                                    string="Credit Note"
+                                    type="object"
+                                    class="btn-outline-danger btn-sm"
+                                    icon="fa-undo"
+                                    invisible="not invoice_id or credit_note_id"/>
+                            <field name="credit_note_id"
+                                   invisible="not credit_note_id"/>
+                        </group>
+                    </group>
+
+                    <separator string="Financial Summary"/>
+
+                    <group>
+                        <group string="Cost Breakdown">
+                            <field name="diagnosis_fee"/>
+                            <field name="labour_cost"/>
+                            <field name="parts_cost"/>
+                            <field name="subtotal" class="fw-bold"/>
+                            <field name="discount_percent"/>
+                            <field name="discount_amount"/>
+                            <field name="tax_amount"/>
+                            <field name="grand_total"
+                                   class="fw-bold"
+                                   style="font-size: 1.2em;"/>
+                        </group>
+                        <group string="Payment Summary">
+                            <field name="total_deposit"/>
+                            <field name="total_paid"/>
+                            <field name="balance_due"
+                                   class="fw-bold"
+                                   decoration-danger="balance_due &gt; 0"
+                                   style="font-size: 1.2em;"/>
+                            <field name="payment_status"
+                                   widget="badge"
+                                   decoration-success="payment_status == 'paid'"
+                                   decoration-warning="payment_status == 'partial'"
+                                   decoration-danger="payment_status == 'unpaid'"/>
+                            <field name="last_payment_date"/>
+                            <button name="action_print_receipt"
+                                    string="Print Receipt"
+                                    type="object"
+                                    class="btn-outline-secondary btn-sm"
+                                    icon="fa-print"/>
+                            <button name="action_register_payment"
+                                    string="Register Payment"
+                                    type="object"
+                                    class="btn-success btn-sm"
+                                    icon="fa-money"
+                                    invisible="payment_status == 'paid'"/>
+                        </group>
+                    </group>
+
+                    <!-- Deposit requirement -->
+                    <group string="Deposit Requirement" col="4">
+                        <field name="requires_deposit"/>
+                        <field name="deposit_amount_required"
+                               invisible="not requires_deposit"/>
+                        <field name="deposit_collected"
+                               invisible="not requires_deposit"
+                               widget="boolean_toggle"/>
+                    </group>
+
+                    <!-- Payment History -->
+                    <separator string="Payment History"/>
+                    <field name="payment_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="payment_date"/>
+                            <field name="amount" sum="Total Payments"/>
+                            <field name="payment_method"/>
+                            <field name="payment_reference"/>
+                            <field name="received_by"/>
+                            <field name="is_deposit_applied"/>
+                            <field name="deposit_applied_amount"/>
+                            <field name="state"
+                                   widget="badge"
+                                   decoration-success="state == 'confirmed'"
+                                   decoration-danger="state == 'reversed'"/>
+                        </list>
+                    </field>
+
+                    <!-- Deposit History -->
+                    <separator string="Deposit History"/>
+                    <field name="deposit_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="date"/>
+                            <field name="amount" sum="Total Deposits"/>
+                            <field name="payment_method"/>
+                            <field name="payment_reference"/>
+                            <field name="received_by"/>
+                            <field name="state"
+                                   widget="badge"
+                                   decoration-success="state == 'confirmed'"
+                                   decoration-danger="state == 'refunded'"/>
+                        </list>
+                    </field>
+
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

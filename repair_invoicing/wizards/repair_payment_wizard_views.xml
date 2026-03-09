@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_repair_payment_wizard_form" model="ir.ui.view">
+        <field name="name">repair.payment.wizard.form</field>
+        <field name="model">repair.payment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Register Payment">
+                <group>
+                    <!-- Job Summary -->
+                    <group string="Job Summary" col="2">
+                        <field name="job_id" readonly="1"/>
+                        <field name="customer_id"/>
+                        <field name="grand_total"/>
+                        <field name="total_paid"/>
+                        <field name="total_deposit"/>
+                        <field name="balance_due"
+                               class="fw-bold"
+                               decoration-danger="balance_due &gt; 0"/>
+                    </group>
+
+                    <!-- Payment Entry -->
+                    <group string="Payment Details" col="2">
+                        <field name="amount"/>
+                        <field name="payment_method"/>
+                        <field name="payment_reference"
+                               placeholder="Bank ref / POS receipt no."/>
+                        <field name="date"/>
+                        <field name="journal_id"/>
+                        <field name="received_by"/>
+                    </group>
+                </group>
+
+                <separator string="Deposit &amp; Options"/>
+                <group>
+                    <group>
+                        <field name="apply_deposit"/>
+                        <field name="deposit_to_apply"
+                               invisible="not apply_deposit"/>
+                    </group>
+                    <group>
+                        <field name="change_amount"
+                               class="fw-bold text-success"
+                               invisible="change_amount == 0"/>
+                        <field name="print_receipt"/>
+                    </group>
+                </group>
+
+                <field name="notes" placeholder="Payment notes..."/>
+
+                <footer>
+                    <button name="action_confirm_payment"
+                            string="Confirm Payment"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-check"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

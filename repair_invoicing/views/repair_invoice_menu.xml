@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- ACTIONS                                                          -->
+    <!-- ================================================================ -->
+
+    <!-- All Invoices (repair jobs that have invoices) -->
+    <record id="action_repair_invoices" model="ir.actions.act_window">
+        <field name="name">All Invoices</field>
+        <field name="res_model">repair.job</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('invoice_id', '!=', False)]</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No invoices yet
+            </p>
+            <p>Invoiced repair jobs will appear here.</p>
+        </field>
+    </record>
+
+    <!-- Payments -->
+    <record id="action_repair_payments" model="ir.actions.act_window">
+        <field name="name">Payments</field>
+        <field name="res_model">repair.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_repair_payment_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No payments recorded
+            </p>
+            <p>All repair job payments will appear here.</p>
+        </field>
+    </record>
+
+    <!-- Deposits -->
+    <record id="action_repair_deposits" model="ir.actions.act_window">
+        <field name="name">Deposits</field>
+        <field name="res_model">repair.deposit</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_repair_deposit_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No deposits collected
+            </p>
+            <p>Customer deposits for repair jobs will appear here.</p>
+        </field>
+    </record>
+
+    <!-- Overdue Payments (jobs with balance > 0) -->
+    <record id="action_repair_overdue" model="ir.actions.act_window">
+        <field name="name">Overdue Payments</field>
+        <field name="res_model">repair.job</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('balance_due', '&gt;', 0), ('state', 'not in', ('cancelled',))]</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No overdue payments
+            </p>
+            <p>Repair jobs with outstanding balances will appear here.</p>
+        </field>
+    </record>
+
+    <!-- Daily Cash Summary (today's payments) -->
+    <record id="action_repair_daily_cash" model="ir.actions.act_window">
+        <field name="name">Daily Cash Summary</field>
+        <field name="res_model">repair.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_repair_payment_search"/>
+        <field name="context">{'search_default_filter_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No payments today
+            </p>
+            <p>Today's repair payments will appear here.</p>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- INVOICING SUBMENU                                                -->
+    <!-- ================================================================ -->
+    <menuitem id="menu_repair_invoicing"
+              name="Invoicing"
+              parent="repair_management.menu_repair_root"
+              sequence="60"/>
+
+    <menuitem id="menu_repair_invoicing_all"
+              name="All Invoices"
+              parent="menu_repair_invoicing"
+              action="action_repair_invoices"
+              sequence="10"/>
+
+    <menuitem id="menu_repair_invoicing_payments"
+              name="Payments"
+              parent="menu_repair_invoicing"
+              action="action_repair_payments"
+              sequence="20"/>
+
+    <menuitem id="menu_repair_invoicing_deposits"
+              name="Deposits"
+              parent="menu_repair_invoicing"
+              action="action_repair_deposits"
+              sequence="30"/>
+
+    <menuitem id="menu_repair_invoicing_overdue"
+              name="Overdue Payments"
+              parent="menu_repair_invoicing"
+              action="action_repair_overdue"
+              sequence="40"/>
+
+    <menuitem id="menu_repair_invoicing_daily_cash"
+              name="Daily Cash Summary"
+              parent="menu_repair_invoicing"
+              action="action_repair_daily_cash"
+              sequence="50"/>
+
+</odoo>

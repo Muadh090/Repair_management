@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- INTER-BRANCH TRANSFERS — LIST VIEW                               -->
+    <!-- ================================================================ -->
+    <record id="view_repair_transfer_list" model="ir.ui.view">
+        <field name="name">repair.stock.movement.transfer.list</field>
+        <field name="model">repair.stock.movement</field>
+        <field name="arch" type="xml">
+            <list string="Inter-Branch Transfers"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'confirmed'"
+                  decoration-success="state == 'done'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="from_branch_id"/>
+                <field name="to_branch_id"/>
+                <field name="from_warehouse_id" optional="show"/>
+                <field name="to_warehouse_id" optional="show"/>
+                <field name="product_id"/>
+                <field name="quantity"/>
+                <field name="total_cost" optional="hide" sum="Total"/>
+                <field name="date"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'confirmed'"
+                       decoration-success="state == 'done'"
+                       decoration-danger="state == 'cancelled'"/>
+                <field name="done_by" widget="many2one_avatar_user"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- INTER-BRANCH TRANSFERS — SEARCH VIEW                             -->
+    <!-- ================================================================ -->
+    <record id="view_repair_transfer_search" model="ir.ui.view">
+        <field name="name">repair.stock.movement.transfer.search</field>
+        <field name="model">repair.stock.movement</field>
+        <field name="arch" type="xml">
+            <search string="Search Transfers">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="from_branch_id"/>
+                <field name="to_branch_id"/>
+                <separator/>
+                <filter name="filter_today"
+                        string="Today"
+                        domain="[('date', '&gt;=', (context_today()).strftime('%Y-%m-%d 00:00:00')),
+                                 ('date', '&lt;', (context_today() + datetime.timedelta(days=1)).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter name="filter_this_week"
+                        string="This Week"
+                        domain="[('date', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <separator/>
+                <filter name="filter_draft"
+                        string="Draft"
+                        domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_done"
+                        string="Completed"
+                        domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="group_from_branch"
+                            string="From Branch"
+                            context="{'group_by': 'from_branch_id'}"/>
+                    <filter name="group_to_branch"
+                            string="To Branch"
+                            context="{'group_by': 'to_branch_id'}"/>
+                    <filter name="group_state"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_date"
+                            string="Date"
+                            context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- INTER-BRANCH TRANSFERS — ACTION                                  -->
+    <!-- ================================================================ -->
+    <record id="action_repair_transfer_all" model="ir.actions.act_window">
+        <field name="name">Inter-Branch Transfers</field>
+        <field name="res_model">repair.stock.movement</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('movement_type', '=', 'branch_transfer')]</field>
+        <field name="context">{'default_movement_type': 'branch_transfer'}</field>
+        <field name="search_view_id" ref="view_repair_transfer_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('view_repair_transfer_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('view_repair_stock_movement_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No inter-branch transfers yet
+            </p>
+            <p>Use the Transfer Wizard to move parts between branches.</p>
+        </field>
+    </record>
+
+</odoo>

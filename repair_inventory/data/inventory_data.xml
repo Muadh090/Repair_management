@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- ================================================================ -->
+    <!-- PRODUCT CATEGORIES                                               -->
+    <!-- ================================================================ -->
+
+    <!-- Repair Parts Category -->
+    <record id="product_category_repair_parts" model="product.category">
+        <field name="name">Repair Parts</field>
+        <field name="parent_id" ref="product.product_category_all"/>
+    </record>
+
+    <!-- Repair Tools Category -->
+    <record id="product_category_repair_tools" model="product.category">
+        <field name="name">Repair Tools</field>
+        <field name="parent_id" ref="product.product_category_all"/>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- STOCK LOCATION FOR REPAIR PARTS                                  -->
+    <!-- ================================================================ -->
+    <record id="stock_location_repair_parts" model="stock.location">
+        <field name="name">Repair Parts</field>
+        <field name="usage">internal</field>
+        <field name="location_id" ref="stock.stock_location_stock"/>
+        <field name="is_repair_location" eval="True"/>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- SEQUENCES                                                        -->
+    <!-- ================================================================ -->
+
+    <!-- Stock Movement Sequence -->
+    <record id="seq_repair_stock_movement" model="ir.sequence">
+        <field name="name">Repair Stock Movement</field>
+        <field name="code">repair.stock.movement</field>
+        <field name="prefix">STK/%(year)s/%(month)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Stock Alert Sequence -->
+    <record id="seq_repair_stock_alert" model="ir.sequence">
+        <field name="name">Repair Stock Alert</field>
+        <field name="code">repair.stock.alert</field>
+        <field name="prefix">ALT/%(year)s/%(month)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Purchase Request Sequence -->
+    <record id="seq_repair_purchase_request" model="ir.sequence">
+        <field name="name">Repair Purchase Request</field>
+        <field name="code">repair.purchase.request</field>
+        <field name="prefix">PUR/%(year)s/%(month)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+</odoo>

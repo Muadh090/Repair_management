@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Stock Adjustment Wizard Form View -->
+    <record id="view_repair_stock_adjustment_wizard_form" model="ir.ui.view">
+        <field name="name">repair.stock.adjustment.wizard.form</field>
+        <field name="model">repair.stock.adjustment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Stock Adjustment">
+                <group>
+                    <group string="Location">
+                        <field name="warehouse_id"/>
+                        <field name="branch_id"/>
+                    </group>
+                    <group string="Details">
+                        <field name="adjustment_date"/>
+                        <field name="reason"/>
+                        <field name="adjusted_by" readonly="1"/>
+                    </group>
+                </group>
+                <separator string="Notes"/>
+                <field name="notes" placeholder="Additional notes..."/>
+                <separator string="Adjustment Lines"/>
+                <field name="line_ids">
+                    <list editable="bottom">
+                        <field name="product_id"/>
+                        <field name="current_qty"/>
+                        <field name="counted_qty"/>
+                        <field name="difference_qty"
+                               decoration-danger="difference_qty &lt; 0"
+                               decoration-success="difference_qty &gt; 0"/>
+                        <field name="unit_cost"/>
+                        <field name="adjustment_value"
+                               decoration-danger="adjustment_value &lt; 0"
+                               decoration-success="adjustment_value &gt; 0"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_apply_adjustment"
+                            string="Apply Adjustment"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Stock Adjustment Wizard Action -->
+    <record id="action_repair_stock_adjustment_wizard" model="ir.actions.act_window">
+        <field name="name">Stock Adjustment</field>
+        <field name="res_model">repair.stock.adjustment.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

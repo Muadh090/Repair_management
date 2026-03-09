@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================ -->
+    <!-- REPORT ACTION                                                    -->
+    <!-- ================================================================ -->
+    <record id="action_report_repair_invoice" model="ir.actions.report">
+        <field name="name">Repair Tax Invoice</field>
+        <field name="model">repair.job</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">repair_invoicing.report_repair_invoice</field>
+        <field name="report_file">repair_invoicing.report_repair_invoice</field>
+        <field name="binding_model_id" ref="repair_management.model_repair_job"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- ================================================================ -->
+    <!-- EXTERNAL LAYOUT WRAPPER                                          -->
+    <!-- ================================================================ -->
+    <template id="report_repair_invoice">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <t t-set="company" t-value="doc.env.company"/>
+                    <div class="page">
+
+                        <!-- ============================================ -->
+                        <!-- HEADER                                       -->
+                        <!-- ============================================ -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <img t-if="company.logo"
+                                     t-att-src="image_data_uri(company.logo)"
+                                     alt="Company Logo"
+                                     style="max-height: 80px;"/>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong t-field="company.name"
+                                        style="font-size: 16px;"/>
+                                <br/>
+                                <span t-field="company.street"/>
+                                <t t-if="company.street2">
+                                    <br/><span t-field="company.street2"/>
+                                </t>
+                                <br/>
+                                <span t-field="company.city"/>
+                                <t t-if="company.state_id">
+                                    , <span t-field="company.state_id.name"/>
+                                </t>
+                                <t t-if="company.zip">
+                                    <span t-field="company.zip"/>
+                                </t>
+                                <br/>
+                                <t t-if="company.phone">
+                                    Tel: <span t-field="company.phone"/>
+                                    <br/>
+                                </t>
+                                <t t-if="company.email">
+                                    Email: <span t-field="company.email"/>
+                                </t>
+                            </div>
+                        </div>
+
+                        <!-- Title -->
+                        <h2 class="text-center mb-4"
+                            style="font-weight: bold; text-transform: uppercase; border-top: 2px solid #000; border-bottom: 2px solid #000; padding: 8px 0;">
+                            TAX INVOICE
+                        </h2>
+
+                        <!-- Invoice meta box -->
+                        <div class="row mb-4">
+                            <div class="col-6"/>
+                            <div class="col-6">
+                                <table class="table table-sm table-bordered"
+                                       style="font-size: 13px;">
+                                    <tr>
+                                        <td class="fw-bold">Invoice No.</td>
+                                        <td>
+                                            <span t-if="doc.invoice_id"
+                                                  t-field="doc.invoice_id.name"/>
+                                            <span t-else="">—</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Invoice Date</td>
+                                        <td>
+                                            <span t-if="doc.invoice_id"
+                                                  t-field="doc.invoice_id.invoice_date"/>
+                                            <span t-else=""
+                                                  t-esc="doc.env.cr.now().strftime('%Y-%m-%d')"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Due Date</td>
+                                        <td>
+                                            <span t-if="doc.invoice_id and doc.invoice_id.invoice_date_due"
+                                                  t-field="doc.invoice_id.invoice_date_due"/>
+                                            <span t-else="">On Receipt</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- CUSTOMER & JOB INFO                          -->
+                        <!-- ============================================ -->
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <strong>Bill To:</strong>
+                                <div style="border: 1px solid #ccc; padding: 10px; min-height: 100px;">
+                                    <strong t-field="doc.customer_id.name"/><br/>
+                                    <t t-if="doc.customer_id.street">
+                                        <span t-field="doc.customer_id.street"/><br/>
+                                    </t>
+                                    <t t-if="doc.customer_id.street2">
+                                        <span t-field="doc.customer_id.street2"/><br/>
+                                    </t>
+                                    <t t-if="doc.customer_id.city">
+                                        <span t-field="doc.customer_id.city"/>
+                                    </t>
+                                    <t t-if="doc.customer_id.state_id">
+                                        , <span t-field="doc.customer_id.state_id.name"/>
+                                    </t>
+                                    <br/>
+                                    <t t-if="doc.customer_phone">
+                                        Tel: <span t-field="doc.customer_phone"/><br/>
+                                    </t>
+                                    <t t-if="doc.customer_email">
+                                        Email: <span t-field="doc.customer_email"/>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-sm"
+                                       style="font-size: 13px;">
+                                    <tr>
+                                        <td class="fw-bold">Job Reference</td>
+                                        <td><span t-field="doc.name"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Branch</td>
+                                        <td>
+                                            <span t-if="doc.branch_id"
+                                                  t-field="doc.branch_id.name"/>
+                                            <span t-else="">—</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Device</td>
+                                        <td>
+                                            <span t-field="doc.device_brand"/>
+                                            <t t-if="doc.device_model">
+                                                – <span t-field="doc.device_model"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Date Received</td>
+                                        <td><span t-field="doc.date_received"
+                                                   t-options="{'widget': 'date'}"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- JOB DETAILS TABLE                            -->
+                        <!-- ============================================ -->
+                        <table class="table table-sm table-bordered"
+                               style="font-size: 13px;">
+                            <thead>
+                                <tr style="background-color: #343a40; color: #fff;">
+                                    <th style="width: 50%;">Description</th>
+                                    <th class="text-center" style="width: 10%;">Qty</th>
+                                    <th class="text-end" style="width: 20%;">Unit Price</th>
+                                    <th class="text-end" style="width: 20%;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Diagnosis Fee -->
+                                <tr t-if="doc.diagnosis_fee">
+                                    <td>Diagnosis Fee</td>
+                                    <td class="text-center">1</td>
+                                    <td class="text-end">
+                                        <span t-field="doc.diagnosis_fee"
+                                              t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="doc.diagnosis_fee"
+                                              t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </td>
+                                </tr>
+                                <!-- Labour Cost -->
+                                <tr t-if="doc.labour_cost">
+                                    <td>Labour Cost</td>
+                                    <td class="text-center">1</td>
+                                    <td class="text-end">
+                                        <span t-field="doc.labour_cost"
+                                              t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="doc.labour_cost"
+                                              t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </td>
+                                </tr>
+                                <!-- Parts Lines -->
+                                <tr t-foreach="doc.parts_line_ids" t-as="line">
+                                    <td>
+                                        <span t-field="line.product_id.display_name"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="line.quantity"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="line.unit_price"
+                                              t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-field="line.subtotal"
+                                              t-options="{'widget': 'float', 'precision': 2}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ============================================ -->
+                        <!-- TOTALS SECTION                               -->
+                        <!-- ============================================ -->
+                        <div class="row">
+                            <div class="col-6"/>
+                            <div class="col-6">
+                                <table class="table table-sm"
+                                       style="font-size: 13px;">
+                                    <tr>
+                                        <td class="text-end fw-bold">Subtotal</td>
+                                        <td class="text-end" style="width: 35%;">
+                                            <span t-field="doc.subtotal"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="doc.discount_amount">
+                                        <td class="text-end">
+                                            Discount
+                                            <t t-if="doc.discount_percent">
+                                                (<span t-field="doc.discount_percent"/>%)
+                                            </t>
+                                        </td>
+                                        <td class="text-end text-danger">
+                                            -<span t-field="doc.discount_amount"
+                                                   t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="doc.tax_amount">
+                                        <td class="text-end">Tax</td>
+                                        <td class="text-end">
+                                            <span t-field="doc.tax_amount"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-top: 2px solid #000;">
+                                        <td class="text-end fw-bold"
+                                            style="font-size: 15px;">
+                                            TOTAL
+                                        </td>
+                                        <td class="text-end fw-bold"
+                                            style="font-size: 15px; background-color: #f8f9fa;">
+                                            <span t-field="doc.grand_total"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- PAYMENT SECTION                              -->
+                        <!-- ============================================ -->
+                        <div class="row mt-3 mb-4">
+                            <div class="col-6"/>
+                            <div class="col-6">
+                                <table class="table table-sm"
+                                       style="font-size: 13px;">
+                                    <tr t-if="doc.total_deposit">
+                                        <td class="text-end">Deposit Paid</td>
+                                        <td class="text-end" style="width: 35%;">
+                                            <span t-field="doc.total_deposit"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-end">Amount Paid</td>
+                                        <td class="text-end" style="width: 35%;">
+                                            <span t-field="doc.total_paid"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-top: 2px solid #000;">
+                                        <td class="text-end fw-bold"
+                                            style="font-size: 14px;">
+                                            Balance Due
+                                        </td>
+                                        <td class="text-end fw-bold"
+                                            style="font-size: 14px;"
+                                            t-attf-class="#{doc.balance_due > 0 and 'text-danger' or 'text-success'}">
+                                            <span t-field="doc.balance_due"
+                                                  t-options="{'widget': 'float', 'precision': 2}"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- FOOTER                                       -->
+                        <!-- ============================================ -->
+                        <div class="mt-4 pt-3"
+                             style="border-top: 1px solid #ccc;">
+                            <p class="text-center"
+                               style="font-size: 14px; font-weight: bold;">
+                                Thank you for your business!
+                            </p>
+                            <div t-if="doc.warranty_period"
+                                 class="text-center mb-2"
+                                 style="font-size: 12px; color: #555;">
+                                <strong>Warranty:</strong>
+                                This repair carries a
+                                <span t-field="doc.warranty_period"/>-day warranty
+                                <t t-if="doc.warranty_expiry">
+                                    (expires: <span t-field="doc.warranty_expiry"/>)
+                                </t>.
+                            </div>
+                            <p class="text-center"
+                               style="font-size: 11px; color: #888;">
+                                All repairs are subject to our standard terms and conditions.
+                                Items not collected within 90 days may be disposed of.
+                                No refunds on labour charges.
+                            </p>
+                            <p class="text-center"
+                               style="font-size: 10px; color: #aaa;">
+                                Powered by <span t-field="company.name"/>
+                            </p>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

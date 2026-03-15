@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_branch_performance_document">
+        <t t-call="web.external_layout">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="company" t-value="user.company_id"/>
+                <t t-set="period" t-value="o._get_period_range()"/>
+                <t t-set="month_jobs" t-value="o.env['repair.job'].search([
+                    ('branch_id', '=', o.branch_id.id),
+                    ('date_received', '>=', period[2]),
+                    ('date_received', '&lt;=', period[3]),
+                ], order='date_received asc')"/>
+                <t t-set="month_payments" t-value="o.env['repair.payment'].search([
+                    ('branch_id', '=', o.branch_id.id),
+                    ('state', '=', 'confirmed'),
+                    ('payment_date', '>=', period[0]),
+                    ('payment_date', '&lt;=', period[1]),
+                ], order='payment_date asc')"/>
+                <t t-set="month_expenses" t-value="o.env['repair.petty.cash'].search([
+                    ('branch_id', '=', o.branch_id.id),
+                    ('state', '=', 'posted'),
+                    ('transaction_type', '=', 'expense'),
+                    ('date', '>=', period[2]),
+                    ('date', '&lt;=', period[3]),
+                ])"/>
+                <t t-set="new_customers" t-value="o.new_customers_actual"/>
+                <t t-set="returning_customers" t-value="len(month_jobs.mapped('customer_id')) - new_customers if len(month_jobs.mapped('customer_id')) &gt;= new_customers else 0"/>
+                <t t-set="top_customers" t-value="o.env['repair.payment'].read_group([
+                    ('branch_id', '=', o.branch_id.id),
+                    ('state', '=', 'confirmed'),
+                    ('payment_date', '>=', period[0]),
+                    ('payment_date', '&lt;=', period[1]),
+                    ('customer_id', '!=', False),
+                ], ['amount:sum', 'customer_id'], ['customer_id'], orderby='amount_sum desc', limit=5)"/>
+                <t t-set="repair_type_groups" t-value="o.env['repair.job'].read_group([
+                    ('branch_id', '=', o.branch_id.id),
+                    ('date_received', '>=', period[2]),
+                    ('date_received', '&lt;=', period[3]),
+                ], ['id:count'], ['device_type'], orderby='id_count desc', limit=6)"/>
+                <t t-set="parts_groups" t-value="o.env['repair.parts.line'].read_group([
+                    ('job_id.branch_id', '=', o.branch_id.id),
+                    ('job_id.date_received', '>=', period[2]),
+                    ('job_id.date_received', '&lt;=', period[3]),
+                ], ['quantity:sum', 'product_id'], ['product_id'], orderby='quantity_sum desc', limit=6)"/>
+                <t t-set="daily_job_groups" t-value="o.env['repair.job'].read_group([
+                    ('branch_id', '=', o.branch_id.id),
+                    ('date_received', '>=', period[2]),
+                    ('date_received', '&lt;=', period[3]),
+                ], ['id:count', 'date_received:day'], ['date_received:day'], orderby='date_received:day asc')"/>
+                <t t-set="daily_payment_groups" t-value="o.env['repair.payment'].read_group([
+                    ('branch_id', '=', o.branch_id.id),
+                    ('state', '=', 'confirmed'),
+                    ('payment_date', '>=', period[0]),
+                    ('payment_date', '&lt;=', period[1]),
+                ], ['amount:sum', 'payment_date:day'], ['payment_date:day'], orderby='payment_date:day asc')"/>
+                <t t-set="trend_keys" t-value="sorted(set([jg.get('date_received:day') for jg in daily_job_groups] + [pg.get('payment_date:day') for pg in daily_payment_groups]))"/>
+
+                <div class="page">
+                    <div style="border-bottom: 2px solid #111827; margin-bottom: 12px; padding-bottom: 8px;">
+                        <h2 style="margin: 0; color: #111827;">Branch Performance Report - <span t-esc="o.period_display"/></h2>
+                        <div style="font-size: 12px; color: #4b5563; margin-top: 3px;">
+                            <strong>Branch:</strong> <span t-esc="o.branch_id.name"/>
+                            <span t-if="o.branch_id.code">(<span t-esc="o.branch_id.code"/>)</span>
+                        </div>
+                    </div>
+
+                    <h4 style="margin: 10px 0 6px 0; color: #111827;">1. Performance Scorecard</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="border: 1px solid #d1d5db; padding: 6px;">Metric</th>
+                                <th style="border: 1px solid #d1d5db; padding: 6px; text-align: right;">Target</th>
+                                <th style="border: 1px solid #d1d5db; padding: 6px; text-align: right;">Actual</th>
+                                <th style="border: 1px solid #d1d5db; padding: 6px; text-align: right;">Achievement %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px;">Revenue</td>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px; text-align: right;"><span t-esc="format_amount(o.revenue_target, company.currency_id)"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px; text-align: right;"><span t-esc="format_amount(o.revenue_actual, company.currency_id)"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px; text-align: right;">
+                                    <span t-att-style="'color: %s; font-weight: 700;' % ('#15803d' if o.revenue_achievement &gt;= 100 else ('#d97706' if o.revenue_achievement &gt;= 80 else '#b91c1c'))" t-esc="'%.2f%%' % o.revenue_achievement"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px;">Jobs</td>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px; text-align: right;"><span t-esc="o.jobs_target"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px; text-align: right;"><span t-esc="o.jobs_actual"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px; text-align: right;">
+                                    <span t-att-style="'color: %s; font-weight: 700;' % ('#15803d' if o.jobs_achievement &gt;= 100 else ('#d97706' if o.jobs_achievement &gt;= 80 else '#b91c1c'))" t-esc="'%.2f%%' % o.jobs_achievement"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <t t-set="cust_ach" t-value="(o.new_customers_actual * 100.0 / o.new_customer_target) if o.new_customer_target else 0.0"/>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px;">New Customers</td>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px; text-align: right;"><span t-esc="o.new_customer_target"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px; text-align: right;"><span t-esc="o.new_customers_actual"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 6px; text-align: right;">
+                                    <span t-att-style="'color: %s; font-weight: 700;' % ('#15803d' if cust_ach &gt;= 100 else ('#d97706' if cust_ach &gt;= 80 else '#b91c1c'))" t-esc="'%.2f%%' % cust_ach"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4 style="margin: 14px 0 6px 0; color: #111827;">2. Technician Performance</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="border: 1px solid #d1d5db; padding: 5px;">Name</th>
+                                <th style="border: 1px solid #d1d5db; padding: 5px; text-align: right;">Jobs</th>
+                                <th style="border: 1px solid #d1d5db; padding: 5px; text-align: right;">Revenue</th>
+                                <th style="border: 1px solid #d1d5db; padding: 5px; text-align: right;">Achievement %</th>
+                                <th style="border: 1px solid #d1d5db; padding: 5px; text-align: right;">Commission Earned</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.technician_target_ids" t-as="tline">
+                                <td style="border: 1px solid #e5e7eb; padding: 5px;"><span t-esc="tline.technician_id.name"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 5px; text-align: right;"><span t-esc="tline.jobs_actual"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 5px; text-align: right;"><span t-esc="format_amount(tline.revenue_actual, company.currency_id)"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 5px; text-align: right;"><span t-esc="'%.2f%%' % tline.achievement_percent"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 5px; text-align: right;"><span t-esc="format_amount(tline.commission_earned, company.currency_id)"/></td>
+                            </tr>
+                            <tr t-if="not o.technician_target_ids">
+                                <td colspan="5" style="border: 1px solid #e5e7eb; padding: 6px; text-align: center; color: #6b7280;">No technician targets configured for this month.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4 style="margin: 14px 0 6px 0; color: #111827;">3. Daily Revenue Trend</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="border: 1px solid #d1d5db; padding: 5px;">Date</th>
+                                <th style="border: 1px solid #d1d5db; padding: 5px; text-align: right;">Jobs</th>
+                                <th style="border: 1px solid #d1d5db; padding: 5px; text-align: right;">Revenue</th>
+                                <th style="border: 1px solid #d1d5db; padding: 5px; text-align: right;">Cumulative Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="cumulative" t-value="0.0"/>
+                            <tr t-foreach="trend_keys" t-as="day_key">
+                                <t t-set="jobs_count" t-value="sum([jg.get('id_count', 0) for jg in daily_job_groups if jg.get('date_received:day') == day_key])"/>
+                                <t t-set="day_revenue" t-value="sum([pg.get('amount_sum', 0.0) for pg in daily_payment_groups if pg.get('payment_date:day') == day_key])"/>
+                                <t t-set="cumulative" t-value="cumulative + day_revenue"/>
+                                <td style="border: 1px solid #e5e7eb; padding: 5px;"><span t-esc="day_key"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 5px; text-align: right;"><span t-esc="jobs_count"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 5px; text-align: right;"><span t-esc="format_amount(day_revenue, company.currency_id)"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 5px; text-align: right;"><span t-esc="format_amount(cumulative, company.currency_id)"/></td>
+                            </tr>
+                            <tr t-if="not trend_keys">
+                                <td colspan="4" style="border: 1px solid #e5e7eb; padding: 6px; text-align: center; color: #6b7280;">No payment activity in this period.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4 style="margin: 14px 0 6px 0; color: #111827;">4. Top Repair Types</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 8px;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="border: 1px solid #d1d5db; padding: 5px;">Repair Type</th>
+                                <th style="border: 1px solid #d1d5db; padding: 5px; text-align: right;">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="repair_type_groups" t-as="rg">
+                                <td style="border: 1px solid #e5e7eb; padding: 5px;"><span t-esc="dict(o.env['repair.job']._fields['device_type'].selection).get(rg.get('device_type'), rg.get('device_type') or '-')"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 5px; text-align: right;"><span t-esc="rg.get('id_count', 0)"/></td>
+                            </tr>
+                            <tr t-if="not repair_type_groups">
+                                <td colspan="2" style="border: 1px solid #e5e7eb; padding: 6px; text-align: center; color: #6b7280;">No repair type data.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="border: 1px solid #d1d5db; padding: 5px;">Most Used Part</th>
+                                <th style="border: 1px solid #d1d5db; padding: 5px; text-align: right;">Quantity Used</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="parts_groups" t-as="pg2">
+                                <td style="border: 1px solid #e5e7eb; padding: 5px;"><span t-esc="pg2.get('product_id') and pg2.get('product_id')[1] or '-'"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 5px; text-align: right;"><span t-esc="pg2.get('quantity_sum', 0.0)"/></td>
+                            </tr>
+                            <tr t-if="not parts_groups">
+                                <td colspan="2" style="border: 1px solid #e5e7eb; padding: 6px; text-align: center; color: #6b7280;">No parts usage in this period.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4 style="margin: 14px 0 6px 0; color: #111827;">5. Customer Analysis</h4>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 8px;">
+                        <tbody>
+                            <tr>
+                                <td style="border: 1px solid #d1d5db; padding: 6px;">New Customers</td>
+                                <td style="border: 1px solid #d1d5db; padding: 6px; text-align: right;"><span t-esc="new_customers"/></td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #d1d5db; padding: 6px;">Returning Customers</td>
+                                <td style="border: 1px solid #d1d5db; padding: 6px; text-align: right;"><span t-esc="returning_customers"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                        <thead>
+                            <tr style="background: #f3f4f6;">
+                                <th style="border: 1px solid #d1d5db; padding: 5px;">Top Customer</th>
+                                <th style="border: 1px solid #d1d5db; padding: 5px; text-align: right;">Total Spend</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="top_customers" t-as="tc">
+                                <td style="border: 1px solid #e5e7eb; padding: 5px;"><span t-esc="tc.get('customer_id') and tc.get('customer_id')[1] or '-'"/></td>
+                                <td style="border: 1px solid #e5e7eb; padding: 5px; text-align: right;"><span t-esc="format_amount(tc.get('amount_sum', 0.0), company.currency_id)"/></td>
+                            </tr>
+                            <tr t-if="not top_customers">
+                                <td colspan="2" style="border: 1px solid #e5e7eb; padding: 6px; text-align: center; color: #6b7280;">No customer payment data.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_branch_performance" model="ir.actions.report">
+        <field name="name">Branch Monthly Performance Report</field>
+        <field name="model">repair.branch.target</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">repair_branch.report_branch_performance_document</field>
+        <field name="report_file">repair_branch.report_branch_performance_document</field>
+        <field name="print_report_name">'Performance Report - %s' % (object.name or object.period_display)</field>
+        <field name="binding_model_id" ref="model_repair_branch_target"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_repair_branch_comparison_list" model="ir.ui.view">
+        <field name="name">repair.branch.comparison.list</field>
+        <field name="model">res.branch</field>
+        <field name="arch" type="xml">
+            <list string="Branch Comparison"
+                  decoration-success="target_achievement &gt;= 100"
+                  decoration-warning="target_achievement &gt;= 70 and target_achievement &lt; 100"
+                  decoration-danger="target_achievement &lt; 70">
+                <field name="name"/>
+                <field name="manager_id"/>
+                <field name="total_jobs_today"/>
+                <field name="pending_jobs_count"/>
+                <field name="todays_collection"/>
+                <field name="monthly_target"/>
+                <field name="target_achievement"/>
+                <field name="low_stock_count"/>
+                <field name="out_of_stock_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_repair_branch_summary_graph" model="ir.ui.view">
+        <field name="name">repair.branch.summary.graph</field>
+        <field name="model">res.branch</field>
+        <field name="arch" type="xml">
+            <graph string="Today's Summary Across Branches" type="bar">
+                <field name="name" type="row"/>
+                <field name="total_jobs_today" type="measure"/>
+                <field name="todays_collection" type="measure"/>
+                <field name="pending_jobs_count" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_repair_branch_performance_pivot" model="ir.ui.view">
+        <field name="name">repair.branch.performance.pivot</field>
+        <field name="model">res.branch</field>
+        <field name="arch" type="xml">
+            <pivot string="Branch Performance Side by Side">
+                <field name="name" type="row"/>
+                <field name="target_achievement" type="measure"/>
+                <field name="current_month_revenue" type="measure"/>
+                <field name="current_month_jobs" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_repair_branch_comparison" model="ir.actions.act_window">
+        <field name="name">Branch Comparison</field>
+        <field name="res_model">res.branch</field>
+        <field name="view_mode">list,graph,pivot</field>
+        <field name="view_id" ref="view_repair_branch_comparison_list"/>
+        <field name="domain">[('branch_type', '!=', 'head_office')]</field>
+    </record>
+
+</odoo>

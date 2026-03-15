@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_repair_branch_day_close_wizard_menu" model="ir.actions.act_window">
+        <field name="name">Day Close Wizard</field>
+        <field name="res_model">repair.branch.day.close.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="action_repair_branch_cash_reconciliation_wizard_menu" model="ir.actions.act_window">
+        <field name="name">Cash Reconciliation Wizard</field>
+        <field name="res_model">repair.branch.cash.reconciliation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_repair_branches_root"
+              name="Branches"
+              parent="repair_management.menu_repair_root"
+              sequence="55"/>
+
+    <menuitem id="menu_repair_branch_all"
+              name="All Branches"
+              parent="menu_repair_branches_root"
+              action="action_repair_branch_profiles"
+              sequence="10"/>
+
+    <menuitem id="menu_repair_branch_my"
+              name="My Branch"
+              parent="menu_repair_branches_root"
+              action="action_repair_branch_my_branch"
+              sequence="20"/>
+
+    <menuitem id="menu_repair_branch_day_close"
+              name="Day Close"
+              parent="menu_repair_branches_root"
+              action="action_repair_branch_day_close"
+              sequence="30"/>
+
+    <menuitem id="menu_repair_branch_cash_reconciliation"
+              name="Cash Reconciliation"
+              parent="menu_repair_branches_root"
+              action="action_repair_branch_cash_reconciliation_wizard_menu"
+              sequence="40"/>
+
+    <menuitem id="menu_repair_branch_announcements"
+              name="Announcements"
+              parent="menu_repair_branches_root"
+              action="action_repair_branch_announcements"
+              sequence="50"/>
+
+    <menuitem id="menu_repair_branch_staff_mgmt"
+              name="Staff Management"
+              parent="menu_repair_branches_root"
+              action="action_repair_branch_staff"
+              sequence="60"/>
+
+    <menuitem id="menu_repair_performance_root"
+              name="Performance"
+              parent="repair_management.menu_repair_root"
+              sequence="56"/>
+
+    <menuitem id="menu_repair_performance_monthly_targets"
+              name="Monthly Targets"
+              parent="menu_repair_performance_root"
+              action="action_repair_branch_targets"
+              sequence="10"/>
+
+    <menuitem id="menu_repair_performance_technician_targets"
+              name="Technician Targets"
+              parent="menu_repair_performance_root"
+              action="action_repair_technician_targets"
+              sequence="20"/>
+
+    <menuitem id="menu_repair_performance_branch_comparison"
+              name="Branch Comparison"
+              parent="menu_repair_performance_root"
+              action="action_repair_branch_comparison"
+              sequence="30"/>
+
+</odoo>

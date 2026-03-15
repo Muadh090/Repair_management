@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Security category -->
+    <record id="module_category_repair_system" model="ir.module.category">
+        <field name="name">Repair System</field>
+        <field name="description">Access rights for Repair Branch Management</field>
+        <field name="sequence">35</field>
+    </record>
+
+    <!-- 1) Repair / Administrator -->
+    <record id="group_repair_administrator" model="res.groups">
+        <field name="name">Repair / Administrator</field>
+        <field name="category_id" ref="repair_branch.module_category_repair_system"/>
+        <field name="implied_ids" eval="[(4, ref('repair_branch.group_repair_ho_manager'))]"/>
+    </record>
+
+    <!-- 2) Repair / Head Office Manager -->
+    <record id="group_repair_ho_manager" model="res.groups">
+        <field name="name">Repair / Head Office Manager</field>
+        <field name="category_id" ref="repair_branch.module_category_repair_system"/>
+        <field name="implied_ids" eval="[(4, ref('repair_branch.group_repair_branch_manager'))]"/>
+    </record>
+
+    <!-- 3) Repair / Branch Manager -->
+    <record id="group_repair_branch_manager" model="res.groups">
+        <field name="name">Repair / Branch Manager</field>
+        <field name="category_id" ref="repair_branch.module_category_repair_system"/>
+        <field name="implied_ids" eval="[(4, ref('repair_branch.group_repair_senior_technician'))]"/>
+    </record>
+
+    <!-- 4) Repair / Senior Technician -->
+    <record id="group_repair_senior_technician" model="res.groups">
+        <field name="name">Repair / Senior Technician</field>
+        <field name="category_id" ref="repair_branch.module_category_repair_system"/>
+        <field name="implied_ids" eval="[(4, ref('repair_branch.group_repair_technician'))]"/>
+    </record>
+
+    <!-- 5) Repair / Technician -->
+    <record id="group_repair_technician" model="res.groups">
+        <field name="name">Repair / Technician</field>
+        <field name="category_id" ref="repair_branch.module_category_repair_system"/>
+    </record>
+
+    <!-- 6) Repair / Receptionist -->
+    <record id="group_repair_receptionist" model="res.groups">
+        <field name="name">Repair / Receptionist</field>
+        <field name="category_id" ref="repair_branch.module_category_repair_system"/>
+    </record>
+
+    <!-- 7) Repair / Accountant -->
+    <record id="group_repair_accountant" model="res.groups">
+        <field name="name">Repair / Accountant</field>
+        <field name="category_id" ref="repair_branch.module_category_repair_system"/>
+    </record>
+
+</odoo>

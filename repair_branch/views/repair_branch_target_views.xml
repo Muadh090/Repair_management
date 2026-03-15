@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_repair_branch_target_list" model="ir.ui.view">
+        <field name="name">repair.branch.target.list</field>
+        <field name="model">repair.branch.target</field>
+        <field name="arch" type="xml">
+            <list string="Branch Targets"
+                  decoration-success="performance_grade == 'excellent'"
+                  decoration-info="performance_grade == 'good'"
+                  decoration-warning="performance_grade == 'average'"
+                  decoration-danger="performance_grade in ('below', 'poor')">
+                <field name="name"/>
+                <field name="branch_id"/>
+                <field name="period_display"/>
+                <field name="revenue_target"/>
+                <field name="revenue_actual"/>
+                <field name="revenue_achievement"/>
+                <field name="jobs_target"/>
+                <field name="jobs_actual"/>
+                <field name="overall_score"/>
+                <field name="performance_grade" widget="badge"
+                       decoration-success="performance_grade == 'excellent'"
+                       decoration-info="performance_grade == 'good'"
+                       decoration-warning="performance_grade == 'average'"
+                       decoration-danger="performance_grade in ('below', 'poor')"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_repair_branch_target_form" model="ir.ui.view">
+        <field name="name">repair.branch.target.form</field>
+        <field name="model">repair.branch.target</field>
+        <field name="arch" type="xml">
+            <form string="Branch Target">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,closed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="branch_id"/>
+                            <field name="month"/>
+                            <field name="year"/>
+                            <field name="period_display" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="overall_score"/>
+                            <field name="performance_grade"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Revenue">
+                            <group>
+                                <field name="revenue_target"/>
+                                <field name="revenue_actual"/>
+                                <field name="revenue_achievement"/>
+                                <field name="revenue_variance"/>
+                            </group>
+                        </page>
+                        <page string="Jobs">
+                            <group>
+                                <field name="jobs_target"/>
+                                <field name="jobs_actual"/>
+                                <field name="jobs_achievement"/>
+                                <field name="new_customer_target"/>
+                                <field name="new_customers_actual"/>
+                            </group>
+                        </page>
+                        <page string="Expense">
+                            <group>
+                                <field name="expense_budget"/>
+                                <field name="expense_actual"/>
+                                <field name="expense_variance"/>
+                                <field name="expense_achievement"/>
+                            </group>
+                        </page>
+                        <page string="Technician Targets">
+                            <field name="technician_target_ids">
+                                <list editable="bottom">
+                                    <field name="technician_id"/>
+                                    <field name="jobs_target"/>
+                                    <field name="jobs_actual"/>
+                                    <field name="revenue_target"/>
+                                    <field name="revenue_actual"/>
+                                    <field name="achievement_percent"/>
+                                    <field name="commission_rate"/>
+                                    <field name="commission_earned"/>
+                                    <field name="bonus_threshold"/>
+                                    <field name="bonus_amount"/>
+                                    <field name="bonus_earned"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Manager Notes">
+                            <field name="manager_comments"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_repair_branch_target_graph" model="ir.ui.view">
+        <field name="name">repair.branch.target.graph</field>
+        <field name="model">repair.branch.target</field>
+        <field name="arch" type="xml">
+            <graph string="Branch Target vs Actual" type="bar">
+                <field name="branch_id" type="row"/>
+                <field name="revenue_target" type="measure"/>
+                <field name="revenue_actual" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_repair_branch_target_search" model="ir.ui.view">
+        <field name="name">repair.branch.target.search</field>
+        <field name="model">repair.branch.target</field>
+        <field name="arch" type="xml">
+            <search string="Search Branch Targets">
+                <field name="branch_id"/>
+                <field name="year"/>
+                <field name="month"/>
+                <separator/>
+                <filter name="filter_current_month" string="Current Month" domain="[('month', '=', context_today().month), ('year', '=', context_today().year)]"/>
+                <filter name="filter_this_year" string="This Year" domain="[('year', '=', context_today().year)]"/>
+                <filter name="filter_exceeded" string="Exceeded Target" domain="[('revenue_achievement', '&gt;=', 100)]"/>
+                <filter name="filter_below" string="Below Target" domain="[('revenue_achievement', '&lt;', 100)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_repair_branch_targets" model="ir.actions.act_window">
+        <field name="name">Monthly Targets</field>
+        <field name="res_model">repair.branch.target</field>
+        <field name="view_mode">list,graph,form</field>
+        <field name="search_view_id" ref="view_repair_branch_target_search"/>
+    </record>
+
+    <record id="view_repair_technician_target_list" model="ir.ui.view">
+        <field name="name">repair.technician.target.list</field>
+        <field name="model">repair.technician.target</field>
+        <field name="arch" type="xml">
+            <list string="Technician Targets"
+                  decoration-success="achievement_percent &gt;= 100"
+                  decoration-warning="achievement_percent &gt;= 70 and achievement_percent &lt; 100"
+                  decoration-danger="achievement_percent &lt; 70">
+                <field name="branch_target_id"/>
+                <field name="technician_id"/>
+                <field name="jobs_target"/>
+                <field name="jobs_actual"/>
+                <field name="revenue_target"/>
+                <field name="revenue_actual"/>
+                <field name="achievement_percent"/>
+                <field name="commission_earned"/>
+                <field name="bonus_earned"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_repair_technician_targets" model="ir.actions.act_window">
+        <field name="name">Technician Targets</field>
+        <field name="res_model">repair.technician.target</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

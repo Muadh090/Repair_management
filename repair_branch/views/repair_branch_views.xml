@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_res_branch_tree_repair_profile" model="ir.ui.view">
+        <field name="name">res.branch.tree.repair.profile</field>
+        <field name="model">res.branch</field>
+        <field name="arch" type="xml">
+            <list string="Branches"
+                  decoration-danger="not is_day_closed"
+                  decoration-muted="not is_active_branch">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="branch_type"/>
+                <field name="manager_id"/>
+                <field name="staff_count"/>
+                <field name="total_jobs_today"/>
+                <field name="pending_jobs_count"/>
+                <field name="todays_collection"/>
+                <field name="is_day_closed" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_res_branch_form_repair_profile" model="ir.ui.view">
+        <field name="name">res.branch.form.repair.profile</field>
+        <field name="model">res.branch</field>
+        <field name="arch" type="xml">
+            <form string="Branch Profile">
+                <header>
+                    <button name="action_close_day" type="object" string="Close Day" class="btn-primary"/>
+                    <button name="action_cash_reconciliation" type="object" string="Cash Reconciliation" class="btn-secondary"/>
+                    <button name="action_print_daily_report" type="object" string="Print Daily Report" class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_jobs" type="object" class="oe_stat_button" icon="fa-wrench">
+                            <field name="total_jobs_today" widget="statinfo" string="Jobs Today"/>
+                        </button>
+                        <button name="action_open_jobs" type="object" class="oe_stat_button" icon="fa-clock-o">
+                            <field name="pending_jobs_count" widget="statinfo" string="Pending"/>
+                        </button>
+                        <button name="action_open_staff" type="object" class="oe_stat_button" icon="fa-users">
+                            <field name="staff_count" widget="statinfo" string="Staff Count"/>
+                        </button>
+                        <button name="action_open_jobs" type="object" class="oe_stat_button" icon="fa-exclamation-triangle">
+                            <field name="low_stock_count" widget="statinfo" string="Low Stock Alerts"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                        <h2>
+                            <field name="code" placeholder="BRN001"/>
+                        </h2>
+                    </div>
+
+                    <notebook>
+                        <page string="Branch Info">
+                            <group>
+                                <group>
+                                    <field name="branch_type"/>
+                                    <field name="is_active_branch"/>
+                                    <field name="date_opened"/>
+                                    <field name="manager_id"/>
+                                    <field name="assistant_manager_id"/>
+                                    <field name="accountant_id"/>
+                                </group>
+                                <group>
+                                    <field name="address"/>
+                                    <field name="city"/>
+                                    <field name="state_id"/>
+                                    <field name="phone"/>
+                                    <field name="email"/>
+                                    <field name="whatsapp"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Operations">
+                            <group>
+                                <group>
+                                    <field name="warehouse_id"/>
+                                    <field name="journal_id"/>
+                                    <field name="bank_journal_id"/>
+                                </group>
+                                <group>
+                                    <field name="opening_time"/>
+                                    <field name="closing_time"/>
+                                    <field name="working_days" widget="many2many_tags"/>
+                                    <field name="is_day_closed"/>
+                                    <field name="last_day_close_date"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Today's Summary">
+                            <group>
+                                <group string="Jobs">
+                                    <field name="total_jobs_today"/>
+                                    <field name="pending_jobs_count"/>
+                                    <field name="ready_for_pickup_count"/>
+                                    <field name="overdue_jobs_count"/>
+                                </group>
+                                <group string="Revenue">
+                                    <field name="todays_collection"/>
+                                    <field name="outstanding_balance"/>
+                                    <field name="petty_cash_balance"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Performance">
+                            <group>
+                                <group string="Targets">
+                                    <field name="monthly_target"/>
+                                    <field name="daily_target"/>
+                                    <field name="target_achievement"/>
+                                </group>
+                                <group string="Achievements">
+                                    <field name="current_month_revenue"/>
+                                    <field name="current_month_jobs"/>
+                                    <field name="total_lifetime_revenue"/>
+                                    <field name="average_daily_revenue"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="comeback_rate"/>
+                                <field name="total_jobs_this_month"/>
+                                <button name="action_view_targets" type="object" string="Open Monthly Targets" class="btn-secondary"/>
+                            </group>
+                        </page>
+
+                        <page string="Staff">
+                            <group>
+                                <field name="staff_ids" widget="many2many_tags"/>
+                                <field name="staff_count"/>
+                                <button name="action_open_staff" type="object" string="Open Staff Management" class="btn-secondary"/>
+                            </group>
+                        </page>
+
+                        <page string="Inventory">
+                            <group>
+                                <group>
+                                    <field name="low_stock_count"/>
+                                    <field name="out_of_stock_count"/>
+                                </group>
+                                <group>
+                                    <field name="total_inventory_value"/>
+                                    <field name="last_reconciliation_date"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_res_branch_search_repair_profile" model="ir.ui.view">
+        <field name="name">res.branch.search.repair.profile</field>
+        <field name="model">res.branch</field>
+        <field name="arch" type="xml">
+            <search string="Search Branches">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="manager_id"/>
+                <field name="city"/>
+                <separator/>
+                <filter name="filter_head_office" string="Head Office" domain="[('branch_type', '=', 'head_office')]"/>
+                <filter name="filter_active" string="Active Branches" domain="[('is_active_branch', '=', True)]"/>
+                <filter name="filter_day_closed" string="Day Closed" domain="[('is_day_closed', '=', True)]"/>
+                <filter name="filter_day_open" string="Day Open" domain="[('is_day_closed', '=', False)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_type" string="Type" context="{'group_by': 'branch_type'}"/>
+                    <filter name="group_manager" string="Manager" context="{'group_by': 'manager_id'}"/>
+                    <filter name="group_city" string="City" context="{'group_by': 'city'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_repair_branch_profiles" model="ir.actions.act_window">
+        <field name="name">All Branches</field>
+        <field name="res_model">res.branch</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_res_branch_tree_repair_profile"/>
+        <field name="search_view_id" ref="view_res_branch_search_repair_profile"/>
+    </record>
+
+    <record id="action_repair_branch_my_branch" model="ir.actions.act_window">
+        <field name="name">My Branch</field>
+        <field name="res_model">res.branch</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_res_branch_tree_repair_profile"/>
+        <field name="search_view_id" ref="view_res_branch_search_repair_profile"/>
+        <field name="domain">[('id', '=', user.branch_id.id)]</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_repair_branch_day_close_list" model="ir.ui.view">
+        <field name="name">repair.branch.day.close.list</field>
+        <field name="model">repair.branch.day.close</field>
+        <field name="arch" type="xml">
+            <list string="Day Close"
+                  decoration-danger="cash_difference != 0"
+                  decoration-success="state == 'approved'"
+                  decoration-warning="state == 'submitted'">
+                <field name="name"/>
+                <field name="branch_id"/>
+                <field name="date"/>
+                <field name="closed_by"/>
+                <field name="total_grand_collected"/>
+                <field name="cash_difference"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'submitted'"
+                       decoration-success="state == 'approved'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_repair_branch_day_close_form" model="ir.ui.view">
+        <field name="name">repair.branch.day.close.form</field>
+        <field name="model">repair.branch.day.close</field>
+        <field name="arch" type="xml">
+            <form string="Day Close">
+                <header>
+                    <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve" type="object" string="Approve" class="btn-success" invisible="state != 'submitted'"/>
+                    <button name="action_reopen" type="object" string="Reopen" class="btn-secondary" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="branch_id"/>
+                            <field name="date"/>
+                            <field name="closed_by"/>
+                            <field name="approved_by"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Repair Summary">
+                            <group>
+                                <field name="total_jobs_received"/>
+                                <field name="total_jobs_completed"/>
+                                <field name="total_jobs_pending"/>
+                                <field name="total_jobs_collected"/>
+                                <field name="total_jobs_cancelled"/>
+                            </group>
+                        </page>
+                        <page string="Financial Summary">
+                            <group>
+                                <group>
+                                    <field name="total_invoiced"/>
+                                    <field name="total_cash_collected"/>
+                                    <field name="total_pos_collected"/>
+                                    <field name="total_transfer_collected"/>
+                                </group>
+                                <group>
+                                    <field name="total_grand_collected"/>
+                                    <field name="total_outstanding"/>
+                                    <field name="total_expenses"/>
+                                    <field name="net_revenue"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Cash Reconciliation">
+                            <group>
+                                <group>
+                                    <field name="opening_cash"/>
+                                    <field name="cash_in"/>
+                                    <field name="cash_out"/>
+                                </group>
+                                <group>
+                                    <field name="expected_closing_cash"/>
+                                    <field name="actual_closing_cash"/>
+                                    <field name="cash_difference" decoration-danger="cash_difference != 0"/>
+                                </group>
+                            </group>
+                            <field name="difference_reason"/>
+                        </page>
+                        <page string="Stock Summary">
+                            <group>
+                                <field name="parts_used_count"/>
+                                <field name="parts_value_used"/>
+                                <field name="low_stock_items"/>
+                            </group>
+                        </page>
+                        <page string="Notes">
+                            <field name="operations_notes"/>
+                            <field name="issues_reported"/>
+                            <field name="next_day_reminders"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_repair_branch_day_close" model="ir.actions.act_window">
+        <field name="name">Day Close</field>
+        <field name="res_model">repair.branch.day.close</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="view_repair_petty_cash_list" model="ir.ui.view">
+        <field name="name">repair.petty.cash.list</field>
+        <field name="model">repair.petty.cash</field>
+        <field name="arch" type="xml">
+            <list string="Petty Cash" decoration-muted="state == 'reversed'">
+                <field name="name"/>
+                <field name="branch_id"/>
+                <field name="transaction_type"/>
+                <field name="amount"/>
+                <field name="balance_after"/>
+                <field name="date"/>
+                <field name="done_by"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_repair_petty_cash_form" model="ir.ui.view">
+        <field name="name">repair.petty.cash.form</field>
+        <field name="model">repair.petty.cash</field>
+        <field name="arch" type="xml">
+            <form string="Petty Cash Transaction">
+                <header>
+                    <button name="action_post" type="object" string="Post" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_reverse" type="object" string="Reverse" class="btn-danger" invisible="state != 'posted'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,posted,reversed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="branch_id"/>
+                            <field name="transaction_type"/>
+                            <field name="amount"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="balance_before"/>
+                            <field name="balance_after"/>
+                            <field name="done_by"/>
+                            <field name="approved_by"/>
+                            <field name="journal_entry_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="reference"/>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_repair_petty_cash" model="ir.actions.act_window">
+        <field name="name">Petty Cash</field>
+        <field name="res_model">repair.petty.cash</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 1) Repair Job - Branch Rule (Branch Manager and below except HO/Admin) -->
+    <record id="rule_repair_job_branch_isolation" model="ir.rule">
+        <field name="name">Repair Job Branch Isolation</field>
+        <field name="model_id" ref="repair_management.model_repair_job"/>
+        <field name="domain_force">[('branch_id', '=', user.branch_id.id)]</field>
+        <field name="groups" eval="[(4, ref('repair_branch.group_repair_branch_manager')),
+                                      (4, ref('repair_branch.group_repair_senior_technician')),
+                                      (4, ref('repair_branch.group_repair_receptionist')),
+                                      (4, ref('repair_branch.group_repair_accountant'))]"/>
+    </record>
+
+    <!-- 2) Repair Payment - Branch Rule -->
+    <record id="rule_repair_payment_branch_isolation" model="ir.rule">
+        <field name="name">Repair Payment Branch Isolation</field>
+        <field name="model_id" ref="repair_invoicing.model_repair_payment"/>
+        <field name="domain_force">[('branch_id', '=', user.branch_id.id)]</field>
+        <field name="groups" eval="[(4, ref('repair_branch.group_repair_branch_manager')),
+                                      (4, ref('repair_branch.group_repair_senior_technician')),
+                                      (4, ref('repair_branch.group_repair_technician')),
+                                      (4, ref('repair_branch.group_repair_receptionist')),
+                                      (4, ref('repair_branch.group_repair_accountant'))]"/>
+    </record>
+
+    <!-- 3) Repair Deposit - Branch Rule -->
+    <record id="rule_repair_deposit_branch_isolation" model="ir.rule">
+        <field name="name">Repair Deposit Branch Isolation</field>
+        <field name="model_id" ref="repair_invoicing.model_repair_deposit"/>
+        <field name="domain_force">[('branch_id', '=', user.branch_id.id)]</field>
+        <field name="groups" eval="[(4, ref('repair_branch.group_repair_branch_manager')),
+                                      (4, ref('repair_branch.group_repair_senior_technician')),
+                                      (4, ref('repair_branch.group_repair_technician')),
+                                      (4, ref('repair_branch.group_repair_receptionist')),
+                                      (4, ref('repair_branch.group_repair_accountant'))]"/>
+    </record>
+
+    <!-- 4) Stock Movement - Branch Rule -->
+    <record id="rule_repair_stock_movement_branch_isolation" model="ir.rule">
+        <field name="name">Repair Stock Movement Branch Isolation</field>
+        <field name="model_id" ref="repair_inventory.model_repair_stock_movement"/>
+        <field name="domain_force">['|', ('from_branch_id', '=', user.branch_id.id), ('to_branch_id', '=', user.branch_id.id)]</field>
+        <field name="groups" eval="[(4, ref('repair_branch.group_repair_branch_manager')),
+                                      (4, ref('repair_branch.group_repair_senior_technician')),
+                                      (4, ref('repair_branch.group_repair_technician')),
+                                      (4, ref('repair_branch.group_repair_receptionist')),
+                                      (4, ref('repair_branch.group_repair_accountant'))]"/>
+    </record>
+
+    <!-- 5) Purchase Request - Branch Rule -->
+    <record id="rule_repair_purchase_request_branch_isolation" model="ir.rule">
+        <field name="name">Repair Purchase Request Branch Isolation</field>
+        <field name="model_id" ref="repair_inventory.model_repair_purchase_request"/>
+        <field name="domain_force">[('branch_id', '=', user.branch_id.id)]</field>
+        <field name="groups" eval="[(4, ref('repair_branch.group_repair_branch_manager')),
+                                      (4, ref('repair_branch.group_repair_senior_technician')),
+                                      (4, ref('repair_branch.group_repair_technician')),
+                                      (4, ref('repair_branch.group_repair_receptionist')),
+                                      (4, ref('repair_branch.group_repair_accountant'))]"/>
+    </record>
+
+    <!-- 6) Day Close - Branch Rule -->
+    <record id="rule_repair_day_close_branch_isolation" model="ir.rule">
+        <field name="name">Repair Day Close Branch Isolation</field>
+        <field name="model_id" ref="repair_branch.model_repair_branch_day_close"/>
+        <field name="domain_force">[('branch_id', '=', user.branch_id.id)]</field>
+        <field name="groups" eval="[(4, ref('repair_branch.group_repair_branch_manager')),
+                                      (4, ref('repair_branch.group_repair_receptionist')),
+                                      (4, ref('repair_branch.group_repair_accountant'))]"/>
+    </record>
+
+    <!-- 7) Petty Cash - Branch Rule -->
+    <record id="rule_repair_petty_cash_branch_isolation" model="ir.rule">
+        <field name="name">Repair Petty Cash Branch Isolation</field>
+        <field name="model_id" ref="repair_branch.model_repair_petty_cash"/>
+        <field name="domain_force">[('branch_id', '=', user.branch_id.id)]</field>
+        <field name="groups" eval="[(4, ref('repair_branch.group_repair_branch_manager')),
+                                      (4, ref('repair_branch.group_repair_receptionist')),
+                                      (4, ref('repair_branch.group_repair_accountant'))]"/>
+    </record>
+
+    <!-- 8) Technician Job Rule -->
+    <record id="rule_repair_job_technician_only" model="ir.rule">
+        <field name="name">Repair Job Technician Assigned Only</field>
+        <field name="model_id" ref="repair_management.model_repair_job"/>
+        <field name="domain_force">['|', ('technician_id.user_id', '=', user.id), ('technician_ids.user_id', '=', user.id)]</field>
+        <field name="groups" eval="[(4, ref('repair_branch.group_repair_technician'))]"/>
+    </record>
+
+</odoo>

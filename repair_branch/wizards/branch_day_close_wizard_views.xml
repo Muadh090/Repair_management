@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_branch_day_close_wizard_form" model="ir.ui.view">
+        <field name="name">repair.branch.day.close.wizard.form</field>
+        <field name="model">repair.branch.day.close.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Branch Day Close" create="0" edit="1">
+                <sheet>
+                    <group>
+                        <group string="Header">
+                            <field name="branch_id"/>
+                            <field name="date" readonly="1"/>
+                            <field name="closed_by"/>
+                            <field name="print_report"/>
+                        </group>
+                        <group string="Physical Count">
+                            <field name="opening_petty_cash" readonly="1"/>
+                            <field name="actual_cash_in_drawer"/>
+                            <field name="cash_difference"
+                                   readonly="1"
+                                   decoration-danger="cash_difference &lt; 0"
+                                   decoration-warning="cash_difference &gt; 0"/>
+                            <field name="difference_reason"
+                                   placeholder="Required if there is a variance..."
+                                   invisible="cash_difference == 0"/>
+                        </group>
+                    </group>
+
+                    <separator string="Repair Summary"/>
+                    <group>
+                        <group>
+                            <field name="jobs_received_today" readonly="1"/>
+                            <field name="jobs_completed_today" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="jobs_pending" readonly="1"/>
+                            <field name="jobs_collected_today" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <separator string="Cash Summary"/>
+                    <group>
+                        <group>
+                            <field name="cash_received_today" readonly="1"/>
+                            <field name="pos_received_today" readonly="1"/>
+                            <field name="transfer_received_today" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="total_received_today" readonly="1" class="oe_inline"/>
+                            <field name="total_expenses_today" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <separator string="Stock Alerts"/>
+                    <group>
+                        <group>
+                            <field name="low_stock_count" readonly="1"/>
+                            <field name="out_of_stock_count" readonly="1"/>
+                            <field name="show_stock_warning" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <separator string="Confirmation Notes"/>
+                    <group>
+                        <field name="operations_notes" placeholder="Operations notes for the day..."/>
+                        <field name="issues_to_report" placeholder="Any issues to report..."/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_close_day"
+                            string="Close Day"
+                            type="object"
+                            class="btn-primary"/>
+                    <button name="action_close_day_with_variance"
+                            string="Close With Variance"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="cash_difference == 0"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_branch_day_close_wizard" model="ir.actions.act_window">
+        <field name="name">Branch Day Close</field>
+        <field name="res_model">repair.branch.day.close.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_branch_day_close_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
